@@ -1,9 +1,9 @@
 SHMONAD_ADDRESS = "0x3a98250F98Dd388C211206983453837C8365BDc1"
 
-# Policy ID для стейкинга
+# 质押策略 ID
 STAKE_POLICY_ID = 4
 
-# ABI для стейкинга
+# 用于质押的 ABI
 STAKE_ABI = [
     {
         "type": "function",
@@ -84,7 +84,7 @@ STAKE_ABI = [
     },
 ]
 
-# Основное ABI для других операций
+# 其他操作的基本 ABI
 SHMONAD_ABI = [
     {
         "constant": True,
@@ -103,7 +103,7 @@ SHMONAD_ABI = [
         "outputs": [{"name": "", "type": "uint256", "internalType": "uint256"}],
         "stateMutability": "payable",
     },
-    # Добавляем методы из STAKE_ABI
+    # 从 STAKE_ABI 添加方法
     *STAKE_ABI,
     {
         "type": "function",

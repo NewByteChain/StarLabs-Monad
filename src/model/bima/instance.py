@@ -40,12 +40,12 @@ class Bima:
     async def login(self):
         for retry in range(self.config.SETTINGS.ATTEMPTS):
             try:
-                message_to_sign, timestamp = await self._get_nonce()
+                message_to_sign, timestamp = await self._get_nonce() # 获取随机数
 
                 if not message_to_sign:
                     raise Exception("Message to sign is empty")
 
-                signature = "0x" + self._get_signature(message_to_sign)
+                signature = "0x" + self._get_signature(message_to_sign) # 生成签名，签名依赖随机数
 
                 headers = {
                     "Accept": "application/json, text/plain, */*",
@@ -69,6 +69,7 @@ class Bima:
                     "timestamp": int(timestamp),
                 }
 
+                # 链接钱包
                 response = await self.session.post(
                     "https://mainnet-api-v1.bima.money/bima/wallet/connect",
                     headers=headers,
@@ -98,10 +99,10 @@ class Bima:
             try:
                 logger.info(f"[{self.account_index}] Lending on Bima...")
 
-                # Создаем контракт токена
+                # 创建代币合约
                 token_contract = self.web3.eth.contract(address=bmBTC, abi=TOKEN_ABI)
 
-                # Получаем баланс токена
+                # 我们得到了代币的余额
                 balance = await token_contract.functions.balanceOf(
                     self.account.address
                 ).call()
@@ -113,28 +114,28 @@ class Bima:
                     f"[{self.account_index}] Token balance: {Web3.from_wei(balance, 'ether')} bmBTC"
                 )
 
-                # Вычисляем сумму для лендинга
+                # 计算借贷的百分比，随机一个配置文件中的比例
                 percent = random.uniform(
                     self.config.BIMA.PERCENT_OF_BALANCE_TO_LEND[0],
                     self.config.BIMA.PERCENT_OF_BALANCE_TO_LEND[1],
                 )
 
-                # Округляем до 4 знаков после запятой для логов
+                # 对数四舍五入到小数点后 4 位
                 amount_to_show = round(
                     Web3.from_wei(balance * percent / 100, "ether"), 4
                 )
                 amount_to_lend = int(
                     balance * percent / 100
-                )  # для транзакции оставляем точное значение
+                )  # 对于交易，我们保留确切的价值
 
                 logger.info(
                     f"[{self.account_index}] Approving {amount_to_show} bmBTC for lending"
                 )
 
-                # 1. Сначала делаем approve
+                # 1. 首先我们进行批准
                 await self._approve_token(amount_to_lend)
 
-                # Пауза между транзакциями
+                # 交易之间暂停
                 random_pause = random.uniform(
                     self.config.SETTINGS.PAUSE_BETWEEN_SWAPS[0],
                     self.config.SETTINGS.PAUSE_BETWEEN_SWAPS[1],
@@ -144,7 +145,7 @@ class Bima:
                 )
                 await asyncio.sleep(random_pause)
 
-                # 2. Затем делаем supplyCollateral
+                # 2. 然后我们确实提供抵押品
                 logger.info(f"[{self.account_index}] Supplying collateral...")
 
                 lending_contract = Web3().eth.contract(
@@ -159,18 +160,18 @@ class Bima:
                         MARKET_PARAMS,
                         amount_to_lend,
                         self.account.address,
-                        "0x",  # пустые данные
+                        "0x",  # 空数据
                     )._encode_transaction_data(),
                     "chainId": 10143,
                     "type": 2,
                     "value": 0,
                 }
 
-                # Оцениваем газ
+                # 我们评估天然气
                 estimated_gas = await self._estimate_gas(transaction)
                 logger.info(f"[{self.account_index}] Estimated gas: {estimated_gas}")
 
-                # Добавляем остальные параметры транзакции
+                # 添加剩余交易参数
                 transaction.update(
                     {
                         "nonce": await self.web3.eth.get_transaction_count(
@@ -189,7 +190,7 @@ class Bima:
                     signed_txn.raw_transaction
                 )
 
-                # Ждем подтверждения транзакции
+                # 等待交易确认
                 logger.info(
                     f"[{self.account_index}] Waiting for supply confirmation..."
                 )
@@ -213,6 +214,7 @@ class Bima:
 
         return False
 
+    # 批准代币支出的辅助方法
     async def _approve_token(self, amount: int):
         """Helper method to approve token spending"""
         contract = Web3().eth.contract(address=bmBTC, abi=TOKEN_ABI)
@@ -258,7 +260,7 @@ class Bima:
     async def get_faucet_tokens(self):
         for retry in range(self.config.SETTINGS.ATTEMPTS):
             try:
-                logged = await self.login()
+                logged = await self.login() # 先完成模拟登录
                 if not logged:
                     raise Exception("Failed to login to Bima")
 
@@ -266,14 +268,14 @@ class Bima:
                     f"[{self.account_index}] Getting tokens from Bima faucet..."
                 )
 
-                # Создаем синхронную версию контракта для кодирования данных
+                # 创建用于编码数据的同步版本的合约
                 contract = Web3().eth.contract(address=FAUCET_ADDRESS, abi=FAUCET_ABI)
-                gas_params = await self._get_gas_params()
+                gas_params = await self._get_gas_params() # 从网络获取当前气体参数。
 
-                # Создаем базовую транзакцию для оценки газа
+                # 创建 gas 定价的基本交易
                 transaction = {
-                    "from": self.account.address,
-                    "to": FAUCET_ADDRESS,
+                    "from": self.account.address, # 这是钱包地址（发送人是自己？？？）
+                    "to": FAUCET_ADDRESS, # 水龙头地址(0x2c9C959516e9AAEdB2C748224a41249202ca8BE7)
                     "data": contract.functions.getTokens(
                         bmBTC
                     )._encode_transaction_data(),
@@ -282,11 +284,11 @@ class Bima:
                     "value": 0,
                 }
 
-                # Оцениваем газ
+                #我们评估天然气
                 estimated_gas = await self._estimate_gas(transaction)
                 logger.info(f"[{self.account_index}] Estimated gas: {estimated_gas}")
 
-                # Добавляем остальные параметры транзакции
+                # 添加剩余交易参数
                 transaction.update(
                     {
                         "nonce": await self.web3.eth.get_transaction_count(
@@ -305,7 +307,7 @@ class Bima:
                     signed_txn.raw_transaction
                 )
 
-                # Ждем подтверждения транзакции
+                # 等待交易确认
                 logger.info(
                     f"[{self.account_index}] Waiting for transaction confirmation..."
                 )
@@ -328,6 +330,7 @@ class Bima:
                 continue
         return False
 
+    # 获取随机数
     async def _get_nonce(self):
         for retry in range(self.config.SETTINGS.ATTEMPTS):
             try:
@@ -370,6 +373,7 @@ class Bima:
                 continue
         return "", ""
 
+    # 从网络获取当前气体参数。
     async def _get_gas_params(self) -> Dict[str, int]:
         """Get current gas parameters from the network."""
         latest_block = await self.web3.eth.get_block("latest")
@@ -384,6 +388,7 @@ class Bima:
             "maxPriorityFeePerGas": max_priority_fee,
         }
 
+    # 估算交易所需的 gas 并添加一些缓冲。
     async def _estimate_gas(self, transaction: dict) -> int:
         """Estimate gas for transaction and add some buffer."""
         try:
@@ -396,6 +401,7 @@ class Bima:
             )
             raise e
 
+    # 生成签名
     def _get_signature(self, message: str):
         encoded_msg = encode_defunct(text=message)
         signed_msg = Web3().eth.account.sign_message(

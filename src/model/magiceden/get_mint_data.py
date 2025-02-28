@@ -27,14 +27,14 @@ async def get_mint_data(
         dict: The mint data response or None if error
         str: Error message if there's a specific error to handle (like "already minted")
     """
-    error_log_frequency = 5  # Выводить ошибки каждую 5-ю попытку
+    error_log_frequency = 5  # 每 5 次尝试显示一次错误
     error = ""
     for attempt in range(1, max_retries + 1):
         should_log = (
             attempt % error_log_frequency == 0 or attempt == 1 or attempt == max_retries
         )
         try:
-            # Create a random referrer address
+            # 创建随机引荐地址
             random_wallet = Account.create()
             random_referrer = random_wallet.address
 
@@ -72,7 +72,7 @@ async def get_mint_data(
                 )
                 error = "all_nfts_minted"
             elif response.status_code == 400:
-                # Проверяем, не связана ли ошибка с тем, что пользователь уже заминтил NFT
+                # 检查错误是否与用户已经铸造 NFT 有关
                 try:
                     error_data = response.json()
                     error_message = error_data.get("message", "")
@@ -88,7 +88,7 @@ async def get_mint_data(
             elif response.status_code >= 500:  # Server errors
                 if attempt < max_retries:
                     wait_time = retry_delay * attempt
-                    # Специальная обработка для "no healthy upstream"
+                    # “无健康上游”特殊处理
                     if "no healthy upstream" in response.text:
                         if should_log:
                             logger.warning(
@@ -120,7 +120,7 @@ async def get_mint_data(
         except Exception as e:
             if attempt < max_retries:
                 wait_time = retry_delay * attempt
-                # Специальная обработка для ошибок подключения
+                # 连接错误的特殊处理
                 if "connection" in str(e).lower():
                     if should_log:
                         logger.warning(

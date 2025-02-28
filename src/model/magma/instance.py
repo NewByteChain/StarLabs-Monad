@@ -29,6 +29,7 @@ class Magma:
         self.account: Account = Account.from_key(private_key=private_key)
         self.web3 = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(RPC_URL))
 
+    # 从网络获取当前气体参数。
     async def get_gas_params(self) -> Dict[str, int]:
         """Get current gas parameters from the network."""
         latest_block = await self.web3.eth.get_block("latest")
@@ -43,6 +44,7 @@ class Magma:
             "maxPriorityFeePerGas": max_priority_fee,
         }
 
+    # 估算交易所需的 gas 并添加一些缓冲。
     async def estimate_gas(self, transaction: dict) -> int:
         """Estimate gas for transaction and add some buffer."""
         try:
@@ -58,6 +60,7 @@ class Magma:
     async def stake_mon(self, amount: float = 0.0001):
         for retry in range(self.config.SETTINGS.ATTEMPTS):
             try:
+                # 从配置文件中获取随机质押mon金额
                 random_amount = round(
                     random.uniform(
                         self.config.MAGMA.AMOUNT_TO_STAKE[0],
@@ -72,21 +75,21 @@ class Magma:
                 amount_wei = Web3.to_wei(random_amount, "ether")
                 gas_params = await self.get_gas_params()
 
-                # Создаем базовую транзакцию для оценки газа
+                # 创建 gas 定价的基本交易
                 transaction = {
                     "from": self.account.address,
-                    "to": STAKE_ADDRESS,
+                    "to": STAKE_ADDRESS, # 质押地址（0x2c9C959516e9AAEdB2C748224a41249202ca8BE7），未验证该合约地址的有效性
                     "data": "0xd5575982",
                     "value": amount_wei,
                     "chainId": 10143,
                     "type": 2,
                 }
 
-                # Оцениваем газ
+                # 评估交易的 gas
                 estimated_gas = await self.estimate_gas(transaction)
                 logger.info(f"[{self.account_index}] Estimated gas: {estimated_gas}")
 
-                # Добавляем остальные параметры транзакции
+                # 添加剩余交易参数
                 transaction.update(
                     {
                         "nonce": await self.web3.eth.get_transaction_count(
@@ -105,7 +108,7 @@ class Magma:
                     signed_txn.raw_transaction
                 )
 
-                # Ждем подтверждения транзакции
+                # 等待交易确认
                 logger.info(
                     f"[{self.account_index}] Waiting for transaction confirmation..."
                 )

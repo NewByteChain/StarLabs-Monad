@@ -1,88 +1,86 @@
 SETTINGS:
-    # number of concurrent threads
+    # 并发线程数
     THREADS: 1
 
-    # number of retries for ANY action
+    # 任何操作的重试次数
     ATTEMPTS: 5
 
-    # account range.
-    # BY DEFAULT: [0, 0] - all accounts
-    # [3, 5] - only 3 4 5 accounts
-    # [7, 7] - only 7 account
+    # 账户范围。
+    # 默认：[0, 0] - 所有账户
+    # [3, 5] - 仅限 3 4 5 个账户
+    # [7, 7] - 仅限 7 个账户
     ACCOUNTS_RANGE: [0, 0]
 
-    # WORKS ONLY IF ACCOUNTS_RANGE IS [0, 0]
-    # exact accounts to use. 
-    # BY DEFAULT: [] - all accounts
-    # Example: [1, 4, 6] - bot will use only 1, 4 and 6 accounts
+    # 仅当 ACCOUNTS_RANGE 为 [0, 0] 时才有效
+    # 要使用的确切帐户。
+    # 默认情况下：[] - 所有帐户
+    # 示例：[1, 4, 6] - 机器人将仅使用 1、4 和 6 个帐户
     EXACT_ACCOUNTS_TO_USE: []
 
-    # pause between attempts
+    # 尝试之间暂停
     PAUSE_BETWEEN_ATTEMPTS: [5, 15]
 
-    # pause between swaps
+    # 交换之间暂停
     PAUSE_BETWEEN_SWAPS: [10, 40]
 
-    # pause in seconds between accounts
+    # 帐户之间暂停几秒
     RANDOM_PAUSE_BETWEEN_ACCOUNTS: [3, 15]
 
-    # pause in seconds between actions
+    # 各个动作之间暂停几秒
     RANDOM_PAUSE_BETWEEN_ACTIONS: [3, 10]
 
-    # random pause before start of every account
-    # to make sure that all accounts will be started at different times
+    # 每个帐户启动前随机暂停
+    # 确保所有帐户在不同时间启动
     RANDOM_INITIALIZATION_PAUSE: [5, 20]
 
-    # pause multiplier for browser actions
+    # 浏览器操作的暂停乘数
     BROWSER_PAUSE_MULTIPLIER: 3
 
 # --------------------------- #
 FLOW:
     # tasks to do.
 
-    # FAUCETS
-    # "faucet" - get tokens from faucet
-    # "farm_faucet" - get tokens from faucet ON FARM ACCOUNTS (data/keys_for_faucet.txt)
-    # "disperse_farm_accounts" - disperse tokens from farm accounts to main accounts | keys_for_faucet.txt -> private_keys.txt
-    # "disperse_from_one_wallet" - disperse tokens from one wallet to all other wallets | keys_for_faucet.txt (first wallet) -> private_keys.txt
+    # 水龙头
+    # "水龙头"-从水龙头获取代币
+    # "farm_faucet"-从水龙头获取代币 ON FARM ACCOUNTS (data/keys_for_faucet.txt)
+    # "disperse_farm_accounts"-将代币从农场账户分散到主账户 | keys_for_faucet.txt -> private_keys.txt
+    # "disperse_from_one_wallet"-将代币从一个钱包分散到所有其他钱包 | keys_for_faucet.txt（第一个钱包）-> private_keys.txt
 
     # SWAPS
-    # "collect_all_to_monad" - swap all tokens to native token (MON)
-    # "swaps" - testnet.monad.xyz/ page token swaps
-    # "bean" - swap tokens on Bean DEX
-    # "ambient" - swap tokens on Ambient DEX
-    # "izumi" - swap tokens on Izumi DEX
+    # "collect_all_to_monad"-将所有代币交换为原生代币（MON）
+    # "swaps"-testnet.monad.xyz/页面代币交换
+    # "bean"-在Bean DEX上交换代币
+    # "ambient"-在Ambient DEX上交换代币
+    # "izumi"-在Izumi DEX上交换代币
 
     # STAKES
-    # "apriori" - stake MON token
-    # "magma" - stake MON token on Magma
-    # "shmonad" - buy and stake shmon on shmonad.xyz | LOOK SETTINGS BELOW
-    # "kintsu" - stake MON token on kintsu.xyz/
+    # "apriori"-质押MON代币
+    # "magma"-在Magma上质押MON代币
+    # "shmonad"-在shmonad.xyz上购买并质押shmon |查看下面的设置
+    # "kintsu"-在 kintsu.xyz/ 上质押 MON 代币
 
     # MINT
-    # "magiceden" - mint NFT on magiceden.io
-    # "accountable" - mint accountable nft
-    # "owlto" - deploy contract on Owlto
-    # "lilchogstars" - mint NFT on testnet.lilchogstars.com/
-    # "demask" - mint NFT on app.demask.finance/launchpad/0x2cdd146aa75ffa605ff7c5cc5f62d3b52c140f9c/0
-    # "monadking" - mint NFT on nerzo.xyz/monadking
-    # "monadking_unlocked" - mint NFT on www.nerzo.xyz/unlocked
+    # "magiceden"-在 magiceden.io 上铸造 NFT
+    # "accountable"-铸造可追溯的 nft
+    # "owlto"-在 Owlto 上部署合约
+    # "lilchogstars"-在 testnet.lilchogstars.com/ 上铸造 NFT
+    # "demask"-在 app.demask.finance/launchpad/0x2cdd146aa75ffa605ff7c5cc5f62d3b52c140f9c/0 上铸造 NFT
+    # "monadking"-在 nerzo.xyz/monadking 上铸造 NFT
+    # "monadking_unlocked"-在 www.nerzo.xyz/unlocked 上铸造 NFT
 
     # REFUEL
-    # "gaszip" - gaszip refuel from arbitrum, optimism, base to monad
-    # "orbiter" - bridge ETH from Sepolia to Monad via Orbiter
-
-    # OTHER
-    # "logs" - show logs: MON balance | number of transactions | avarage balance | avarage number of transactions
-    # "nad_domains" - register random domain on nad.domains
-    # DOES NOT WORK, WAIT FOR UPDATE -"bima" - lending
-    
-    # EXAMPLE: tasks: ["gaszip", "swaps"]
-    # RANDOM TASKS EXAMPLE:
-    # TASKS: ["swaps", ["bean", "logs"], "collect_all_to_monad"]
-    # in this case, the tasks will be executed in the following order:
+    # "gaszip"-从 gaszip 加油arbitrum、optimism、base to monad
+    # "orbiter"-通过 Orbiter 将 ETH 从 Sepolia 桥接到 Monad
+    # 其他
+    # "logs"-显示日志：MON 余额 | 交易数量 | 平均余额 | 平均交易数量
+    # "nad_domains"-在 nad.domains 上注册随机域
+    # 不起作用，等待更新 -"bima"-借贷
+    # 示例：任务：["gaszip"、"swaps"]
+    # 随机任务示例：
+    # 任务：["swaps"、"bean"、"logs"]、"collect_all_to_monad"]
+    # 在这种情况下，任务将按以下顺序执行：
     # 1. swaps
-    # 2. bean or logs (randomly)
+    # 2. bean 或日志（随机）
     # 3. collect_all_to_monad
     # TASKS:
     #     [
@@ -95,14 +93,25 @@ FLOW:
     #         ["apriori", "magma", "kintsu", "shmonad"],
     #         "logs",
     #     ]
-    TASKS: ["izumi"]
+    # TASKS: ["izumi"]
 
-    # number of swaps. bean ambient monad etc
+    # 可用任务：
+    # "connect_discord" - 连接 discord 帐户
+    # "swaps" - 交换代币
+    # "apriori" - 质押 MON 代币
+    # "magma" - 在 Magma 上质押 MON 代币
+    # "owlto" - 在 Owlto 上部署合约
+    # "bima" - 借贷和水龙头
+    TASKS: ["connect_discord", "swaps", "apriori", "magma", "owlto", "bima"]
+
+    # 交换次数。bean 环境 monad 等
     NUMBER_OF_SWAPS: [1, 3]
 
-    # percent of balance to swap
+    # 要交换的余额百分比
     PERCENT_OF_BALANCE_TO_SWAP: [10, 15]
 
+# 验证码解决方案
+# 2captcha.com | capmonster.cloud | capsolver.com
 FAUCET:
     MONAD_XYZ: true
 
@@ -111,55 +120,60 @@ FAUCET:
 
 
 DISPERSE:
-    # if balance of main account is LESS than this value
-    # bot will disperse tokens from farm accounts to main account
+    # 如果主账户余额小于此值
+    # 机器人会将代币从农场账户分散到主账户
     MIN_BALANCE_FOR_DISPERSE: [0.2, 0.5]
 
-
+# APRIORI质押数量范围，在此范围内随机选择
 APRIORI:
     AMOUNT_TO_STAKE: [0.0001, 0.0003]
-
+# MAGMA质押数量范围，在此范围内随机选择
 MAGMA:
-    AMOUNT_TO_STAKE: [0.0001, 0.0003]
-
+    AMOUNT_TO_STAKE: [0.0001, 0.0003]  # 质押金额随机范围
+# KINTSU质押数量范围，在此范围内随机选择
 KINTSU:
-    # MINIMUM IS 0.01 $MON
+    # 最低为 0.01 美元
     AMOUNT_TO_STAKE: [0.01, 0.02]
 
 BIMA:
-    LEND: true
-    PERCENT_OF_BALANCE_TO_LEND: [20, 30]
+    LEND: true  # 是否借贷
+    PERCENT_OF_BALANCE_TO_LEND: [20, 30]  # 借出余额百分比，随机一个数字，在此配置文件中的范围内
 
+# 加油交易配置
 GASZIP:
-    NETWORKS_TO_REFUEL_FROM: ["Arbitrum", "Base", "Optimism"]
-    AMOUNT_TO_REFUEL: [0.0001, 0.00015]
-    MINIMUM_BALANCE_TO_REFUEL: 0.5
+    NETWORKS_TO_REFUEL_FROM: ["Arbitrum", "Base", "Optimism"] # 加油网络（这三个网络找到符合加油条件的账户执行加油操作，如果多个网络都满足条件，则随机取一个网络进行加油）
+    AMOUNT_TO_REFUEL: [0.0001, 0.00015] # 加油金额随机范围
+    MINIMUM_BALANCE_TO_REFUEL: 0.5  # 执行加油操作的最低余额（账户原生代币低于此金额，则该网络不执行加油操作）
     WAIT_FOR_FUNDS_TO_ARRIVE: true
     MAX_WAIT_TIME: 999999
 
+# SHMONAD质押交易配置
 SHMONAD:
-    BUY_AND_STAKE_SHMON: true
-    UNSTAKE_AND_SELL_SHMON: true
+    BUY_AND_STAKE_SHMON: true  # 购买并质押
+    UNSTAKE_AND_SELL_SHMON: true  # 取消质押并出售
 
-    # percent of balance to swap on shmonad.xyz
+    # 在 shmonad.xyz 上交换的余额百分比
     PERCENT_OF_BALANCE_TO_SWAP: [2, 3]
 
+# Mint NFT铸造配置
 ACCOUNTABLE:
-    NFT_PER_ACCOUNT_LIMIT: 3
+    NFT_PER_ACCOUNT_LIMIT: 3 # 每个帐户的 NFT 限制
 
+# ORBITER 垮桥链接
 ORBITER:
-    AMOUNT_TO_BRIDGE: [0.1, 0.2]
-    BRIDGE_ALL: false
-    WAIT_FOR_FUNDS_TO_ARRIVE: true
+    AMOUNT_TO_BRIDGE: [0.1, 0.2]  # 桥接金额随机范围
+    BRIDGE_ALL: false # 桥接所有余额
+    WAIT_FOR_FUNDS_TO_ARRIVE: true  # 等待资金到账
     MAX_WAIT_TIME: 999999999
 
+# LILCHOGSTARS NFT铸造配置
 LILCHOGSTARS:
     MAX_AMOUNT_FOR_EACH_ACCOUNT: [1, 3]
-
+# DEMASK NFT铸造配置
 DEMASK:
     MAX_AMOUNT_FOR_EACH_ACCOUNT: [1, 3]
 
-# monadking or monadking_unlocked
+# monadking 或 monadking_unlocked
 MONADKING:
     MAX_AMOUNT_FOR_EACH_ACCOUNT: [1, 3]
 

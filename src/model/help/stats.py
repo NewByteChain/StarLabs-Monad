@@ -29,33 +29,33 @@ class WalletStats:
         self, private_key: str, account_index: int
     ) -> Optional[bool]:
         """
-        Получает статистику кошелька и сохраняет в конфиг
+        获取钱包统计信息并保存到配置
 
-        Args:
-            private_key: Приватный ключ кошелька
-            account_index: Индекс аккаунта
+        参数：
+        private_key：钱包的私钥
+        account_index: 账户索引
 
-        Returns:
-            bool: True если успешно, False если ошибка
+        返回：
+        bool: 如果成功则为 True，如果错误则为 False
         """
         try:
-            # Получаем адрес из приватного ключа
+            # 我们从私钥中获取地址
             account = Account.from_key(private_key)
             address = account.address
 
-            # Получаем баланс
+            # 查询ETH余额
             balance_wei = await self.w3.eth.get_balance(address)
             balance_eth = self.w3.from_wei(balance_wei, "ether")
 
-            # Получаем количество транзакций (nonce)
+            # 获取交易数量（nonce）
             tx_count = await self.w3.eth.get_transaction_count(address)
 
             wallet_info = WalletInfo(
-                account_index=account_index,
-                private_key=private_key,
-                address=address,
-                balance=float(balance_eth),
-                transactions=tx_count,
+                account_index=account_index, # 账户索引
+                private_key=private_key,    # 私钥
+                address=address,            # 地址
+                balance=float(balance_eth), # 余额
+                transactions=tx_count,      # 交易数量
             )
 
             with self._lock:

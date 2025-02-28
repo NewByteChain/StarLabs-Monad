@@ -28,7 +28,7 @@ class MonadXYZ:
         self.discord_token = discord_token
         self.config = config
         self.session: primp.AsyncClient = session
-
+        # 从私钥创建钱包
         self.wallet = Account.from_key(private_key)
 
     async def swaps(self, type: str):
@@ -65,14 +65,14 @@ class MonadXYZ:
                             )
                             await asyncio.sleep(random_pause)
                             success = True
-                            break  # Break retry loop on success
+                            break  # 成功时中断重试循环
                             
                         except Exception as e:
                             logger.error(
                                 f"[{self.account_index}] | Error swap in monad.xyz ({retry + 1}/{self.config.SETTINGS.ATTEMPTS}): {e}"
                             )
                             if retry == self.config.SETTINGS.ATTEMPTS - 1:
-                                raise  # Re-raise if all retries failed
+                                raise  # 如果所有重试都失败，则重新加注
                             continue
                     
                     if not success:
@@ -109,14 +109,14 @@ class MonadXYZ:
                             )
                             await asyncio.sleep(random_pause)
                             success = True
-                            break  # Break retry loop on success
+                            break  # 成功时中断重试循环
                             
                         except Exception as e:
                             logger.error(
                                 f"[{self.account_index}] | Error swap in ambient ({retry + 1}/{self.config.SETTINGS.ATTEMPTS}): {e}"
                             )
                             if retry == self.config.SETTINGS.ATTEMPTS - 1:
-                                raise  # Re-raise if all retries failed
+                                raise  # 如果所有重试都失败，则重新加注
                             continue
                     
                     if not success:
@@ -153,14 +153,14 @@ class MonadXYZ:
                             )
                             await asyncio.sleep(random_pause)
                             success = True
-                            break  # Break retry loop on success
+                            break  # 成功时中断重试循环
                             
                         except Exception as e:
                             logger.error(
                                 f"[{self.account_index}] | Error swap in bean ({retry + 1}/{self.config.SETTINGS.ATTEMPTS}): {e}"
                             )
                             if retry == self.config.SETTINGS.ATTEMPTS - 1:
-                                raise  # Re-raise if all retries failed
+                                raise  # 如果所有重试都失败，则重新加注
                             continue
                     
                     if not success:
@@ -217,8 +217,8 @@ class MonadXYZ:
                 success = False
                 for retry in range(self.config.SETTINGS.ATTEMPTS):
                     try:
-                        # First try collecting via MonadSwap
-                        swapper = MonadSwap(self.private_key, self.proxy)
+                        # 首先尝试通过 MonadSwap 收集
+                        swapper = MonadSwap(self.private_key, self.proxy) # 通过 MonadSwap 收集
                         await swapper.swap(
                             percentage_to_swap=100, token_out="native",
                         )
@@ -231,7 +231,7 @@ class MonadXYZ:
                         )
                         await asyncio.sleep(random_pause)
 
-                        # Then try collecting via Ambient
+                        # 尝试通过 Ambient 收集
                         ambient_swapper = AmbientDex(self.private_key, self.proxy, self.config)
                         await ambient_swapper.swap(
                             percentage_to_swap=100, type="collect"
@@ -245,7 +245,7 @@ class MonadXYZ:
                         )
                         await asyncio.sleep(random_pause)
                         
-                        # Then try collecting via Bean
+                        # 尝试通过 Bean 收集
                         bean_swapper = BeanDex(self.private_key, self.proxy, self.config)
                         await bean_swapper.swap(
                             percentage_to_swap=100, type="collect"
@@ -259,7 +259,7 @@ class MonadXYZ:
                         )
                         await asyncio.sleep(random_pause)
 
-                        # Then try collecting via Izumi
+                        # 尝试通过 Izumi 收集
                         izumi_swapper = IzumiDex(self.private_key, self.proxy, self.config)
                         await izumi_swapper.swap(
                             percentage_to_swap=100, type="collect"
@@ -274,7 +274,7 @@ class MonadXYZ:
                         await asyncio.sleep(random_pause)
 
                         success = True
-                        break  # Break the retry loop on success
+                        break  # 成功后打破重试循环
                         
                     except Exception as e:
                         random_pause = random.randint(
@@ -287,7 +287,7 @@ class MonadXYZ:
                         await asyncio.sleep(random_pause)
                         continue
                     
-                return success  # Return True if succeeded, False if all retries failed
+                return success  # 如果成功则返回 True，如果所有重试都失败则返回 False
         except Exception as e:
             logger.error(f"[{self.account_index}] | Error swaps: {e}")
             return False
@@ -301,6 +301,7 @@ class MonadXYZ:
             logger.error(f"[{self.account_index}] | Error faucet to monad.xyz: {e}")
             return False
 
+    # 连接 Discord
     async def connect_discord(self):
         for retry in range(self.config.SETTINGS.ATTEMPTS):
             try:

@@ -9,7 +9,7 @@ from src.utils.constants import EXPLORER_URL, RPC_URL
 from src.utils.config import Config
 from loguru import logger
 
-# Обновляем ABI для контракта NFT с дополнительными методами
+# 使用附加方法更新 NFT 合约的 ABI
 ERC1155_ABI = [
     {
         "inputs": [
@@ -63,21 +63,21 @@ class Demask:
         self.account: Account = Account.from_key(private_key=private_key)
         self.web3 = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(RPC_URL))
 
-        self.nft_contract_address = "0x2CDd146Aa75FFA605ff7c5Cc5f62D3B52C140f9c"  # Updated contract address for DeMask
+        self.nft_contract_address = "0x2CDd146Aa75FFA605ff7c5Cc5f62D3B52C140f9c"  # 更新了 DeMask 的合约地址
         self.nft_contract: Contract = self.web3.eth.contract(
             address=self.nft_contract_address, abi=ERC1155_ABI
         )
 
     async def get_nft_balance(self) -> int:
         """
-        Проверяет баланс NFT для текущего аккаунта
-        Returns:
-            int: количество NFT
+        检查当前账户的 NFT 余额
+        返回：
+        int：NFT 数量
         """
         try:
-            # Пробуем использовать функцию mintedCountPerWallet из контракта
-            # Эта функция должна вернуть количество NFT, которые уже минтил пользователь
-            stage_id = 0  # Предполагаем, что это первый этап (может потребоваться корректировка)
+            # 让我们尝试使用合约中的 mintedCountPerWallet 函数
+            # 此函数应返回用户已铸造的 NFT 数量
+            stage_id = 0  # 我们假设这是第一阶段（可能需要调整）
 
             balance = await self.nft_contract.functions.mintedCountPerWallet(
                 self.account.address, stage_id
@@ -86,9 +86,9 @@ class Demask:
             logger.info(f"[{self.account_index}] DeMask NFT balance: {balance}")
             return balance
         except Exception as e:
-            # Если первый метод не сработал, пробуем стандартный balanceOf
+            # 如果第一种方法不起作用，请尝试标准 balanceOf
             try:
-                token_id = 46917  # ID токена из транзакции
+                token_id = 46917  # 交易中的代币 ID
                 balance = await self.nft_contract.functions.balanceOf(
                     self.account.address, token_id
                 ).call()
@@ -98,7 +98,7 @@ class Demask:
                 )
                 return balance
             except Exception as e2:
-                # Если оба метода не сработали, логируем ошибки и возвращаем 0
+                # 如果两种方法都失败，则记录错误并返回 0
                 logger.warning(
                     f"[{self.account_index}] Error checking NFT balance via mintedCountPerWallet: {e}"
                 )
@@ -106,14 +106,14 @@ class Demask:
                     f"[{self.account_index}] Error checking NFT balance via balanceOf: {e2}"
                 )
 
-                # Проверяем историю транзакций как последний вариант
+                # 检查交易历史记录作为最后的手段
                 try:
-                    # Получаем историю транзакций для адреса контракта
+                    # 获取合约地址的交易历史记录
                     tx_count = await self.web3.eth.get_transaction_count(
                         self.account.address
                     )
 
-                    # Для простоты, проверим только последние 10 транзакций
+                    # 为了简单起见，我们只检查最近 10 笔交易。
                     for i in range(max(0, tx_count - 10), tx_count):
                         try:
                             nonce = i
@@ -121,7 +121,7 @@ class Demask:
                                 self.account.address, nonce
                             )
 
-                            # Если транзакция была к нашему контракту и успешно выполнена
+                            # 如果交易符合我们的合同并成功完成
                             if (
                                 tx
                                 and tx.to
@@ -131,12 +131,12 @@ class Demask:
                                     tx.hash
                                 )
                                 if receipt and receipt.status == 1:
-                                    # Нашли успешную транзакцию к контракту NFT
+                                    # 发现有一笔成功的交易到 NFT 合约
                                     logger.info(
                                         f"[{self.account_index}] Found successful transaction to DeMask contract"
                                     )
                                     return (
-                                        1  # Возвращаем 1, что означает NFT уже минтили
+                                        1  # 返回 1，表示 NFT 已被铸造
                                     )
                         except Exception:
                             continue
@@ -145,7 +145,7 @@ class Demask:
                         f"[{self.account_index}] Error checking transaction history: {e3}"
                     )
 
-                # Если все методы не сработали, возвращаем 0
+                # 如果所有方法都失败，则返回 0
                 return 0
 
     async def mint(self):
@@ -166,8 +166,8 @@ class Demask:
 
                 logger.info(f"[{self.account_index}] Minting DeMask NFT")
 
-                # Подготавливаем транзакцию минта с методом buy
-                # Используем пустой proof, limit=1000000, amount=1
+                # 使用 buy 方法准备铸币交易
+                # 我们使用一个空的证明，limit=1000000，amount=1
                 mint_txn = await self.nft_contract.functions.buy(
                     [], 1000000, 1
                 ).build_transaction(
@@ -182,17 +182,17 @@ class Demask:
                     }
                 )
 
-                # Подписываем транзакцию
+                # 我们签署交易
                 signed_txn = self.web3.eth.account.sign_transaction(
                     mint_txn, self.private_key
                 )
 
-                # Отправляем транзакцию
+                # 发送交易
                 tx_hash = await self.web3.eth.send_raw_transaction(
                     signed_txn.raw_transaction
                 )
 
-                # Ждем подтверждения
+                # 我们正在等待确认
                 receipt = await self.web3.eth.wait_for_transaction_receipt(tx_hash)
 
                 if receipt["status"] == 1:

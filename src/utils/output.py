@@ -14,13 +14,13 @@ from prompt_toolkit.styles import Style
 
 
 def show_logo():
-    """Отображает стильный логотип STARLABS"""
+    """显示时尚的 STARLABS 徽标"""
     # Очищаем экран
     os.system("cls" if os.name == "nt" else "clear")
 
     console = Console()
 
-    # Создаем звездное небо со стилизованным логотипом
+    # 用风格化的徽标创建星空
     logo_text = """
 ✦ ˚ . ⋆   ˚ ✦  ˚  ✦  . ⋆ ˚   ✦  . ⋆ ˚   ✦ ˚ . ⋆   ˚ ✦  ˚  ✦  . ⋆   ˚ ✦  ˚  ✦  . ⋆ ✦ ˚ 
 . ⋆ ˚ ✧  . ⋆ ˚  ✦ ˚ . ⋆  ˚ ✦ . ⋆ ˚  ✦ ˚ . ⋆  ˚ ✦ . ⋆ ˚  ✦ ˚ . ⋆  ˚ ✦ . ⋆  ˚ ✦ .✦ ˚ . 
@@ -35,20 +35,20 @@ def show_logo():
 . ⋆ ˚ ✧  . ⋆ ˚  ✦ ˚ . ⋆  ˚ ✦ . ⋆ ˚  ✦ ˚ . ⋆  ˚ ✦ . ⋆ ˚  ✦ ˚ . ⋆  ˚ ✦ . ⋆  ˚ ✦ .. ⋆  ˚ 
 ✦ ˚ . ⋆   ˚ ✦  ˚  ✦  . ⋆ ˚   ✦  . ⋆ ˚   ✦ ˚ . ⋆   ˚ ✦  ˚  ✦  . ⋆   ˚ ✦  ˚  ✦  . ⋆  ✦"""
 
-    # Создаем градиентный текст
+    # 创建渐变文本
     gradient_logo = Text(logo_text)
     gradient_logo.stylize("bold bright_cyan")
 
-    # Выводим с отступами
+    # 带缩进的输出
     console.print(gradient_logo)
     print()
 
 
 def show_dev_info():
-    """Displays development and version information"""
+    """显示开发和版本信息"""
     console = Console()
 
-    # Создаем красивую таблицу
+    # 让我们创建一个美丽的餐桌
     table = Table(
         show_header=False,
         box=box.DOUBLE,
@@ -58,10 +58,10 @@ def show_dev_info():
         highlight=True,
     )
 
-    # Добавляем колонки
+    # 添加列
     table.add_column("Content", style="bright_cyan", justify="center")
 
-    # Добавляем строки с контактами
+    # 添加联系人线路
     table.add_row("✨ StarLabs Monad Bot 1.8 ✨")
     table.add_row("─" * 43)
     table.add_row("")
@@ -70,7 +70,7 @@ def show_dev_info():
     table.add_row("💬 Chat: [link]https://t.me/StarLabsChat[/link]")
     table.add_row("")
 
-    # Выводим таблицу с отступом
+    # 输出带缩进的表格
     print("   ", end="")
     print()
     console.print(table)

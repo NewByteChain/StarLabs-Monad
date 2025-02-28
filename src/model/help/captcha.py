@@ -28,6 +28,10 @@ class ErrorCodes(Enum):
     ERROR_WRONG_CAPTCHA_ID = "ERROR_WRONG_CAPTCHA_ID"
     ERROR_EMPTY_ACTION = "ERROR_EMPTY_ACTION"
 
+# 验证码解决器
+# 1、https://bcsapi.xyz/api
+# 2、https://24captcha.online
+# 3、https://api.capsolver.com
 
 class BestCaptchaSolver:
     def __init__(
@@ -54,7 +58,7 @@ class BestCaptchaSolver:
         domain: str = None,
         user_agent: str = None,
     ) -> Optional[str]:
-        """Создает задачу на решение капчи"""
+        """创建验证码解决任务"""
         data = {
             "access_token": self.api_key,
             "site_key": sitekey,
@@ -89,7 +93,7 @@ class BestCaptchaSolver:
             return None
 
     def get_task_result(self, task_id: str) -> Optional[str]:
-        """Получает результат решения капчи"""
+        """获取验证码解答结果"""
         params = {"access_token": self.api_key}
 
         max_attempts = 30
@@ -118,7 +122,7 @@ class BestCaptchaSolver:
         return None
 
     def solve_recaptcha(self, sitekey: str, pageurl: str) -> Optional[str]:
-        """Решает hCaptcha и возвращает токен"""
+        """解决 hCaptcha 并返回令牌"""
         task_id = self.create_task(sitekey, pageurl, True, "monad.xyz")
         if not task_id:
             return None
@@ -151,7 +155,7 @@ class TwentyFourCaptchaSolver:
         enterprise: bool = False,
         rqdata: Optional[str] = None,
     ) -> Optional[str]:
-        """Создает задачу на решение капчи"""
+        """创建验证码解决任务"""
         data = {
             "key": self.api_key,
             "method": "hcaptcha",
@@ -190,7 +194,7 @@ class TwentyFourCaptchaSolver:
             return None
 
     def get_task_result(self, task_id: str) -> Optional[str]:
-        """Получает результат решения капчи"""
+        """获取验证码解答结果"""
         data = {"key": self.api_key, "action": "get", "id": task_id, "json": 1}
 
         max_attempts = 30
@@ -218,7 +222,7 @@ class TwentyFourCaptchaSolver:
                 logger.error(f"Error getting result: {e}")
                 return None
 
-        logger.error("Max polling attempts reached without getting a result")
+        logger.error("已达到最大轮询尝试次数，但未获得结果")
         return None
 
     def solve_hcaptcha(
@@ -229,7 +233,7 @@ class TwentyFourCaptchaSolver:
         enterprise: bool = False,
         rqdata: Optional[str] = None,
     ) -> Optional[str]:
-        """Решает hCaptcha и возвращает токен"""
+        """解决 hCaptcha 并返回令牌"""
         task_id = self.create_task(
             sitekey=sitekey,
             pageurl=pageurl,
@@ -268,7 +272,7 @@ class Capsolver:
         pageurl: str,
         invisible: bool = False,
     ) -> Optional[str]:
-        """Создает задачу на решение капчи"""
+        """创建验证码解决任务"""
         data = {
             "clientKey": self.api_key,
             "appId": "0F6B2D90-7CA4-49AC-B0D3-D32C70238AD8",
@@ -303,7 +307,7 @@ class Capsolver:
             return None
 
     async def get_task_result(self, task_id: str) -> Optional[str]:
-        """Получает результат решения капчи"""
+        """获取验证码解答结果"""
         data = {"clientKey": self.api_key, "taskId": task_id}
 
         max_attempts = 30
@@ -317,7 +321,7 @@ class Capsolver:
                 result = response.json()
 
                 if result.get("status") == "ready":
-                    # Handle both reCAPTCHA and Turnstile responses
+                    # 处理 reCAPTCHA 和 Turnstile 响应
                     solution = result.get("solution", {})
                     return solution.get("token") or solution.get("gRecaptchaResponse")
                 elif "errorId" in result and result["errorId"] != 0:
@@ -338,13 +342,14 @@ class Capsolver:
         pageurl: str,
         invisible: bool = False,
     ) -> Optional[str]:
-        """Решает RecaptchaV2 и возвращает токен"""
+        """解决 RecaptchaV2 并返回令牌"""
         task_id = await self.create_task(sitekey, pageurl, invisible)
         if not task_id:
             return None
 
         return await self.get_task_result(task_id)
 
+    # 创建 Turnstile 验证码解决任务
     async def create_turnstile_task(
         self,
         sitekey: str,
@@ -352,7 +357,7 @@ class Capsolver:
         action: Optional[str] = None,
         cdata: Optional[str] = None,
     ) -> Optional[str]:
-        """Creates a Turnstile captcha solving task"""
+        """创建 Turnstile 验证码解决任务"""
         data = {
             "clientKey": self.api_key,
             "task": {
@@ -388,6 +393,7 @@ class Capsolver:
             logger.error(f"Error creating Turnstile task: {e}")
             return None
 
+    # 解决 Cloudflare Turnstile 验证码并返回令牌
     async def solve_turnstile(
         self,
         sitekey: str,
@@ -395,7 +401,7 @@ class Capsolver:
         action: Optional[str] = None,
         cdata: Optional[str] = None,
     ) -> Optional[str]:
-        """Solves Cloudflare Turnstile captcha and returns token"""
+        """解决 Cloudflare Turnstile 验证码并返回令牌"""
         task_id = await self.create_turnstile_task(
             sitekey=sitekey,
             pageurl=pageurl,

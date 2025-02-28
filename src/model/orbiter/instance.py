@@ -5,7 +5,7 @@ from primp import AsyncClient
 from web3 import AsyncWeb3
 import asyncio
 
-from src.model.orbiter.constants import SEPOLIA_EXPLORER_URL, SEPOLIA_RPC_URL, MONAD_SEPOLIA_ETHEREUM_ADDRESS
+from src.model.orbiter.constants import SEPOLIA_EXPLORER_URL, SEPOLIA_RPC_URL, MONAD_SEPOLIA_ETHEREUM_ADDRESS, SEPOLIA_BRIDGE_ADDRESS
 from src.utils.client import create_client
 from src.utils.config import Config
 from loguru import logger
@@ -51,9 +51,10 @@ class Orbiter:
             "maxPriorityFeePerGas": max_priority_fee,
         }
     
+    # 等待资金到达 Monad 网络。
     async def wait_for_funds(self, initial_balance: int):
         """Wait for funds to arrive in Monad network."""
-        max_attempts = self.config.ORBITER.MAX_WAIT_TIME // 10  # Convert total wait time to number of 10-second attempts
+        max_attempts = self.config.ORBITER.MAX_WAIT_TIME // 10  # 将总等待时间转换为 10 秒尝试次数
         
         logger.info(f"[{self.account_index}] Waiting for funds to arrive in Monad (max wait time: {self.config.ORBITER.MAX_WAIT_TIME} seconds)...")
         for attempt in range(max_attempts):
@@ -76,10 +77,11 @@ class Orbiter:
         logger.warning(f"[{self.account_index}] Timeout waiting for funds after {self.config.ORBITER.MAX_WAIT_TIME} seconds")
         return False
 
+    # 通过 Orbiter 将 ETH 从 Sepolia 桥接到 Monad。
     async def bridge(self):
         """Bridge ETH from Sepolia to Monad via Orbiter."""
         try:
-            # Get initial balance on Monad if we need to wait for funds
+            # 如果我们需要等待资金，请获取 Monad 上的初始余额
             initial_monad_balance = 0
             if self.config.ORBITER.WAIT_FOR_FUNDS_TO_ARRIVE:
                 initial_monad_balance = await self.monad_sepolia.functions.balanceOf(
@@ -93,55 +95,55 @@ class Orbiter:
             gas_params = await self.get_gas_params()
             gas_cost_wei = gas_params['maxFeePerGas'] * 21000
             
-            # Determine amount to bridge in Wei
-            if self.config.ORBITER.BRIDGE_ALL:
-                # Bridge entire balance minus gas, ensuring we leave enough for gas
+            # 确定桥接金额数量
+            if self.config.ORBITER.BRIDGE_ALL:  # 全部桥接
+                # 桥接全部余额减去 gas，确保我们留出足够的 gas
                 gas_cost_with_buffer = int(gas_cost_wei * 1.05)
                 if balance_wei <= gas_cost_with_buffer:
                     logger.error(f"[{self.account_index}] Balance too low to cover gas costs")
                     return False
                     
                 # Leave some extra buffer for gas (5%)
-                amount_wei = balance_wei - gas_cost_with_buffer
+                amount_wei = balance_wei - gas_cost_with_buffer # 留一些额外的gas（5%）
                 
-                # Convert to ETH string
+                # 转换为 ETH 字符串
                 base_amount = self.web3.from_wei(amount_wei, 'ether')
                 amount_str = str(base_amount)
                 
             else:
-                # Random amount from config range with random precision (5-12 decimals)
+                # 配置范围中的随机金额，具有随机精度（5-12 位小数）
                 base_amount = random.uniform(
                     self.config.ORBITER.AMOUNT_TO_BRIDGE[0],
                     self.config.ORBITER.AMOUNT_TO_BRIDGE[1]
                 )
-                # Round to random precision between 5-12 decimals
+                # 四舍五入为 5 至 12 位小数之间的随机精度
                 precision = random.randint(5, 12)
                 amount_str = f"{base_amount:.{precision}f}"
 
-            # Ensure exactly 14 decimal places + 9596
+            # 确保精确到小数点后 14 位 + 9596
             if '.' not in amount_str:
                 amount_str += '.'
             whole, decimal = amount_str.split('.')
-            # Pad with zeros to get exactly 14 decimal places
+            # 用零填充以获得恰好 14 位小数
             decimal = (decimal + '0' * 14)[:14]
             formatted_amount = f"{whole}.{decimal}9596"
             
             amount_wei = self.web3.to_wei(formatted_amount, 'ether')
             logger.info(f"[{self.account_index}] Bridging amount: {formatted_amount} ETH")
 
-            # Prepare transaction
+            # 准备交易
             transaction = {
                 'from': self.account.address,
-                'to': "0xB5AADef97d81A77664fcc3f16Bfe328ad6CEc7ac",
+                'to': SEPOLIA_BRIDGE_ADDRESS,  # 调整成配置文件获取跨链桥地址，合约地址的合法性有待验证 "0xB5AADef97d81A77664fcc3f16Bfe328ad6CEc7ac",   #   bridge address
                 'value': amount_wei,
                 'nonce': await self.web3.eth.get_transaction_count(self.account.address),
                 'chainId': 11155111,
                 'type': 2,
-                'gas': 21000,
+                'gas': 21000,   # 这里用了固定的gas
                 **gas_params
             }
 
-            # Sign and send transaction
+            # 签署并发送交易
             try:
                 signed_txn = self.web3.eth.account.sign_transaction(transaction, self.private_key)
                 tx_hash = await self.web3.eth.send_raw_transaction(signed_txn.raw_transaction)

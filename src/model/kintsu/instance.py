@@ -30,6 +30,7 @@ class Kintsu:
         self.account: Account = Account.from_key(private_key=private_key)
         self.web3 = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(RPC_URL))
 
+    # 获取当前网络的 gas 参数。
     async def get_gas_params(self) -> Dict[str, int]:
         """Get current gas parameters from the network."""
         latest_block = await self.web3.eth.get_block("latest")
@@ -44,6 +45,7 @@ class Kintsu:
             "maxPriorityFeePerGas": max_priority_fee,
         }
 
+    # 估算交易的 gas 并添加一些缓冲。
     async def estimate_gas(self, transaction: dict) -> int:
         """Estimate gas for transaction and add some buffer."""
         try:
@@ -56,16 +58,17 @@ class Kintsu:
             )
             raise e
 
+    # 在 Kintsu 上质押 MON。
     async def stake_mon(self):
         for retry in range(self.config.SETTINGS.ATTEMPTS):
             try:
-                # Use a higher minimum amount to avoid "Minimum stake" error
-                # Based on the transaction you shared (0.04072 MON)
+                # 使用更高的最低金额以避免“最低赌注”错误
+                # 根据您分享的交易（0.04072 MON）的最低赌注要求，您需要至少赌注 0.04 MON。
                 random_amount = round(
                     random.uniform(
                         max(
                             0.01, self.config.KINTSU.AMOUNT_TO_STAKE[0]
-                        ),  # Ensure minimum of 0   .01
+                        ),  # Ensure minimum of 0.01
                         max(
                             0.015, self.config.KINTSU.AMOUNT_TO_STAKE[1]
                         ),  # Ensure minimum of 0.015
@@ -76,12 +79,12 @@ class Kintsu:
                     f"[{self.account_index}] Staking {random_amount} MON on Kintsu"
                 )
 
-                # Create synchronous contract version for encoding data
+                # 创建用于编码数据的同步合约版本
                 contract = Web3().eth.contract(address=STAKE_ADDRESS, abi=STAKE_ABI)
                 amount_wei = Web3.to_wei(random_amount, "ether")
                 gas_params = await self.get_gas_params()
 
-                # Create base transaction for gas estimation
+                # 创建用于 gas 估算的基础交易
                 transaction = {
                     "from": self.account.address,
                     "to": STAKE_ADDRESS,
@@ -95,7 +98,7 @@ class Kintsu:
                 estimated_gas = await self.estimate_gas(transaction)
                 logger.info(f"[{self.account_index}] Estimated gas: {estimated_gas}")
 
-                # Add remaining transaction parameters
+                # 添加剩余交易参数
                 transaction.update(
                     {
                         "nonce": await self.web3.eth.get_transaction_count(
@@ -114,7 +117,7 @@ class Kintsu:
                     signed_txn.raw_transaction
                 )
 
-                # Wait for transaction confirmation
+                # 等待交易确认
                 logger.info(
                     f"[{self.account_index}] Waiting for transaction confirmation..."
                 )

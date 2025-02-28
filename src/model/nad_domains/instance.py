@@ -41,7 +41,7 @@ class NadDomains:
             address=self.web3.to_checksum_address(NAD_NFT_ADDRESS),
             abi=NAD_NFT_ABI
         )
-
+    # 获取当前网络的 gas 参数。
     async def get_gas_params(self) -> Dict[str, int]:
         """Get current gas parameters from the network."""
         latest_block = await self.web3.eth.get_block("latest")
@@ -56,21 +56,23 @@ class NadDomains:
             "maxPriorityFeePerGas": max_priority_fee,
         }
 
+    # 生成一个随机的域名。
     def generate_random_name(self, min_length=6, max_length=12) -> str:
         """Generate a random domain name."""
-        # Choose a random length between min and max
+        # 在最小值和最大值之间选择随机长度
         length = random.randint(min_length, max_length)
         
-        # Generate random string with letters and numbers
+        # 生成包含字母和数字的随机字符串
         characters = string.ascii_lowercase + string.digits
         name = ''.join(random.choice(characters) for _ in range(length))
         
-        # Ensure it starts with a letter
+        # 确保以字母开头
         if name[0].isdigit():
             name = random.choice(string.ascii_lowercase) + name[1:]
         
         return name
 
+    # 从 API 获取域名注册所需的签名。
     async def get_signature(self, name: str) -> Optional[Dict]:
         """Get signature from API for domain registration."""
         headers = {
@@ -103,10 +105,10 @@ class NadDomains:
             data = response.json()
             if data.get('success'):
                 logger.info(f"[{self.account_index}] Got signature for domain {name}")
-                # Store the signature exactly as returned from API
+                # 存储与 API 返回的签名完全相同的签名
                 return {
-                    'signature': data['signature'],  # Keep as is, web3.py will handle the format
-                    'nonce': int(data['nonce']),     # Make sure we have it as an integer
+                    'signature': data['signature'],  # 保持原样，web3.py 将处理格式
+                    'nonce': int(data['nonce']),     # 确保它是一个整数
                     'deadline': int(data['deadline'])
                 }
             else:
@@ -117,6 +119,7 @@ class NadDomains:
             logger.error(f"[{self.account_index}] Error getting signature: {str(e)}")
             return None
 
+    # 检查域名是否可用。
     async def is_name_available(self, name: str) -> bool:
         """Check if domain name is available."""
         try:
@@ -126,6 +129,7 @@ class NadDomains:
             logger.error(f"[{self.account_index}] Error checking name availability: {str(e)}")
             return False
 
+    # 注册域名。
     async def register_domain(self, name: str) -> bool:
         """Register a domain name using the NAD Domains smart contract."""
         try:
@@ -164,15 +168,15 @@ class NadDomains:
                     'from': self.account.address,
                     'value': fee
                 })
-                # Add 20% buffer to gas estimate to ensure transaction doesn't run out of gas
+                # 在 gas 估算中添加 20% 的缓冲，以确保交易不会耗尽 gas
                 gas_with_buffer = int(gas_estimate * 1.2)
                 logger.info(f"[{self.account_index}] Estimated gas: {gas_estimate}, with buffer: {gas_with_buffer}")
             except Exception as e:
-                # If gas estimation fails, log error and return false
+                # 如果 gas 估算失败，则记录错误并返回 false
                 logger.error(f"[{self.account_index}] Gas estimation failed: {str(e)}. Cannot proceed with registration.")
                 return False
             
-            # Build the transaction
+            # 建立交易
             transaction = await self.contract.functions.registerWithSignature(
                 register_data,
                 signature
@@ -207,7 +211,8 @@ class NadDomains:
         except Exception as e:
             logger.error(f"[{self.account_index}] Error registering {name}: {str(e)}")
             return False
-
+        
+    # 检查钱包是否已经拥有 NAD 域名。
     async def has_domain(self) -> bool:
         """Check if wallet already owns a NAD domain."""
         try:
@@ -219,27 +224,27 @@ class NadDomains:
         except Exception as e:
             logger.error(f"[{self.account_index}] Error checking NAD domain balance: {str(e)}")
             return False
-
+    # 注册一个随机的域名。
     async def register_random_domain(self) -> bool:
         """Register a random domain name with retry logic."""
         try:
-            # First check if wallet already has a domain
+            # 首先检查钱包是否已有域名
             if await self.has_domain():
                 logger.success(f"[{self.account_index}] Wallet already has a NAD domain, skipping registration")
                 return True
                 
-            # Continue with registration if no domain is owned
+            # 如果没有域名则继续注册
             for retry in range(self.config.SETTINGS.ATTEMPTS):
                 try:
-                    # Generate a random name
+                    # 生成随机名称
                     name = self.generate_random_name()
                     logger.info(f"[{self.account_index}] Generated random domain name: {name}")
                     
-                    # Check if the name is available
+                    # 检查名称是否可用
                     if await self.is_name_available(name):
                         logger.info(f"[{self.account_index}] Domain {name} is available, registering...")
                         
-                        # Register the domain
+                        # 注册域名
                         if await self.register_domain(name):
                             return True
                     else:

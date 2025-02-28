@@ -7,36 +7,36 @@ from src.utils.config import Config, WalletInfo
 
 def print_wallets_stats(config: Config):
     """
-    Выводит статистику по всем кошелькам в виде таблицы
+    在表格中显示所有钱包的统计信息
     """
     try:
-        # Сортируем кошельки по индексу
+        # 按索引对钱包进行排序
         sorted_wallets = sorted(config.WALLETS.wallets, key=lambda x: x.account_index)
 
-        # Подготавливаем данные для таблицы
+        # 准备表格数据
         table_data = []
         total_balance = 0
         total_transactions = 0
 
         for wallet in sorted_wallets:
-            # Маскируем приватный ключ (последние 5 символов)
+            # 屏蔽私钥（最后 5 个字符）
             masked_key = "•" * 3 + wallet.private_key[-5:]
 
             total_balance += wallet.balance
             total_transactions += wallet.transactions
 
             row = [
-                str(wallet.account_index),  # Просто номер без ведущего нуля
-                wallet.address,  # Полный адрес
+                str(wallet.account_index),  # 只是一个没有前导零的数字。
+                wallet.address,  # 详细地址
                 masked_key,
                 f"{wallet.balance:.4f} MON",
-                f"{wallet.transactions:,}",  # Форматируем число с разделителями
+                f"{wallet.transactions:,}",  # 使用分隔符格式化数字
             ]
             table_data.append(row)
 
-        # Если есть данные - выводим таблицу и статистику
+        # 如果有数据，我们将显示表格和统计数据
         if table_data:
-            # Создаем заголовки для таблицы
+            # 让我们为表格创建标题
             headers = [
                 "№ Account",
                 "Wallet Address",
@@ -45,21 +45,21 @@ def print_wallets_stats(config: Config):
                 "Total Txs",
             ]
 
-            # Формируем таблицу с улучшенным форматированием
+            # 形成具有改进格式的表格
             table = tabulate(
                 table_data,
                 headers=headers,
                 tablefmt="double_grid",  # Более красивые границы
-                stralign="center",  # Центрирование строк
-                numalign="center",  # Центрирование чисел
+                stralign="center",  # 居中线
+                numalign="center",  # 居中数字
             )
 
-            # Считаем средние значения
+            # 我们计算平均值
             wallets_count = len(sorted_wallets)
             avg_balance = total_balance / wallets_count
             avg_transactions = total_transactions / wallets_count
 
-            # Выводим таблицу и статистику
+            # 我们输出表格和统计数据
             logger.info(
                 f"\n{'='*50}\n"
                 f"         Wallets Statistics ({wallets_count} wallets)\n"

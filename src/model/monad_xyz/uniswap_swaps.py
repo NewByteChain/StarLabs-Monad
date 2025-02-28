@@ -86,8 +86,8 @@ class MonadSwap:
             raise ValueError("Percentage must be between 0 and 100")
         percentage = Decimal(percentage_to_swap) / Decimal(100)
 
-        # When swapping from native to token, check native balance
-        # When swapping from token to native, check the token balance
+        # 当从原生代币兑换为代币时，检查原生代币余额
+        # 从代币兑换为原生代币时，检查代币余额
         balance_token = "native" if token_out != "native" else token_out
         
         balance_ether = await self.get_token_balance_ether(balance_token)

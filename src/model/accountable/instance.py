@@ -58,7 +58,7 @@ class Accountable:
 
         for attempt in range(max_retries):
             try:
-                # Add 15 second timeout to prevent request hanging
+                # 添加 15 秒超时以防止请求挂起
                 response = await self.session.post(
                     'https://game.accountable.capital/api/generate-signature-mint',
                     json=json_data,
@@ -71,7 +71,7 @@ class Accountable:
                 data = response.json()
                 nonce = data.get("nonce", 0)
                 
-                # Check if account reached NFT limit
+                # 检查帐户是否达到 NFT 限制
                 if nonce >= self.config.ACCOUNTABLE.NFT_PER_ACCOUNT_LIMIT:
                     logger.warning(f"[{self.account_index}] Account already minted {nonce} NFTs (limit: {self.config.ACCOUNTABLE.NFT_PER_ACCOUNT_LIMIT})")
                     return None
@@ -89,6 +89,7 @@ class Accountable:
                     self.config.SETTINGS.PAUSE_BETWEEN_ATTEMPTS[1]
                 ))
     
+    # 检查钱包中所有 NFT ID（1-7）的余额。
     async def get_nft_balances(self) -> list:
         """Check balances of all NFT IDs (1-7) for the wallet."""
         try:
@@ -107,21 +108,22 @@ class Accountable:
             logger.error(f"[{self.account_index}] Error checking NFT balances: {str(e)}")
             return []
 
+    # 通过签名执行NFT铸造。
     async def mint(self):
         """Execute NFT minting with signature."""
         for retry in range(self.config.SETTINGS.ATTEMPTS):
             try:
-                # Get currently owned NFTs
+                # 获取当前拥有的 NFT
                 owned_nfts = await self.get_nft_balances()
                 
-                # Get available NFTs to mint (ones we don't own)
+                # 获取可用的 NFT 来铸造（我们不拥有的）
                 available_nfts = [i for i in range(1, 8) if i not in owned_nfts]
                 
                 if not available_nfts:
                     logger.success(f"[{self.account_index}] Already own all available NFTs")
                     return True
 
-                # Pick random NFT from available ones
+                # 从可用的 NFT 中随机挑选一个
                 token_id = random.choice(available_nfts)
                 logger.info(f"[{self.account_index}] Selected token ID {token_id} for minting from available IDs: {available_nfts}")
                 
@@ -132,10 +134,10 @@ class Accountable:
 
                 logger.info(f"[{self.account_index}] Minting NFT #{token_id} with signature")
 
-                # Convert hex signature to bytes
+                # 将十六进制签名转换为字节
                 signature_bytes = bytes.fromhex(signature.replace('0x', ''))
 
-                # Estimate gas for the mint transaction
+                # 估算铸币交易的 gas 费用
                 gas_estimate = await self.nft_contract.functions.mint(
                     token_id,
                     signature_bytes
@@ -143,10 +145,10 @@ class Accountable:
                     'from': self.account.address
                 })
 
-                # Get gas parameters
+                # 获取 gas 参数
                 gas_params = await self.get_gas_params()
 
-                # Prepare mint transaction
+                # 创建mint NFT交易
                 mint_txn = await self.nft_contract.functions.mint(
                     token_id,
                     signature_bytes

@@ -9,7 +9,7 @@ from src.utils.constants import EXPLORER_URL, RPC_URL
 from src.utils.config import Config
 from loguru import logger
 
-# Обновляем ABI для контракта NFT
+# 更新 NFT 合约的 ABI
 ERC1155_ABI = [
     {
         "inputs": [
@@ -64,7 +64,7 @@ class Lilchogstars:
         self.web3 = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(RPC_URL))
 
         self.nft_contract_address = (
-            "0xb33D7138c53e516871977094B249C8f2ab89a4F4"  # Updated contract address
+            "0xb33D7138c53e516871977094B249C8f2ab89a4F4"  # 更新合约地址
         )
         self.nft_contract: Contract = self.web3.eth.contract(
             address=self.nft_contract_address, abi=ERC1155_ABI
@@ -72,12 +72,12 @@ class Lilchogstars:
 
     async def get_nft_balance(self) -> int:
         """
-        Проверяет баланс NFT для текущего аккаунта
-        Returns:
-            int: количество NFT
+        检查当前账户的 NFT 余额
+        返回：
+        int：NFT 数量
         """
         try:
-            # Используем метод mintedCount для получения количества NFT
+            # 使用 mintedCount 方法获取 NFT 的数量
             balance = await self.nft_contract.functions.mintedCount(
                 self.account.address
             ).call()
@@ -95,8 +95,8 @@ class Lilchogstars:
     async def mint(self):
         for retry in range(self.config.SETTINGS.ATTEMPTS):
             try:
-                balance = await self.get_nft_balance()
-
+                balance = await self.get_nft_balance()  # 获取当前 NFT 余额
+                # 生成随机数量以避免同时尝试 mint
                 random_amount = random.randint(
                     self.config.LILCHOGSTARS.MAX_AMOUNT_FOR_EACH_ACCOUNT[0],
                     self.config.LILCHOGSTARS.MAX_AMOUNT_FOR_EACH_ACCOUNT[1],
@@ -114,7 +114,7 @@ class Lilchogstars:
 
                 logger.info(f"[{self.account_index}] Minting Lilchogstars NFT")
 
-                # Подготавливаем транзакцию минта с параметром quantity=1
+                # 我们准备一个参数为数量=1的铸币交易
                 mint_txn = await self.nft_contract.functions.mint(1).build_transaction(
                     {
                         "from": self.account.address,
@@ -127,17 +127,17 @@ class Lilchogstars:
                     }
                 )
 
-                # Подписываем транзакцию
+                # 我们签署交易
                 signed_txn = self.web3.eth.account.sign_transaction(
                     mint_txn, self.private_key
                 )
 
-                # Отправляем транзакцию
+                # 发送交易
                 tx_hash = await self.web3.eth.send_raw_transaction(
                     signed_txn.raw_transaction
                 )
 
-                # Ждем подтверждения
+                # 我们正在等待确认
                 receipt = await self.web3.eth.wait_for_transaction_receipt(tx_hash)
 
                 if receipt["status"] == 1:

@@ -4,7 +4,7 @@ FAUCET_ADDRESS = "0x15e47CF518073bd980f10a1064231db14238858A"
 bmBTC = Web3.to_checksum_address("0x0bb0aa6aa3a3fd4f7a43fb5e3d90bf9e6b4ef799")
 SPENDER_ADDRESS = Web3.to_checksum_address("0x07c4b0db9c020296275dceb6381397ac58bbf5c7")
 
-# Стандартный ABI для ERC20 токена
+# 借贷合约：ERC20 代币的标准 ABI
 TOKEN_ABI = [
     {
         "inputs": [{"internalType": "address", "name": "account", "type": "address"}],
@@ -37,7 +37,7 @@ FAUCET_ABI = [
     }
 ]
 
-# Параметры для supplyCollateral
+# supplyCollat​​eral 的参数
 MARKET_PARAMS = (
     Web3.to_checksum_address("0x01a4b3221e078106f9eb60c5303e3ba162f6a92e"),  # loanToken
     bmBTC,  # collateralToken

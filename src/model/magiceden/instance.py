@@ -31,7 +31,7 @@ class MagicEden:
         try:
             from src.model.magiceden.abi import ABI
 
-            # Используем to_checksum_address для преобразования адреса в правильный формат
+            # 使用 to_checksum_address 将地址转换为正确的格式
             nft_contract_raw = random.choice(self.config.MAGICEDEN.NFT_CONTRACTS)
             
             nft_contract = self.web3.to_checksum_address(nft_contract_raw)
@@ -40,10 +40,10 @@ class MagicEden:
                 f"[{self.account_index}] | 🚀 Starting MagicEden mint for contract: {nft_contract}"
             )
 
-            # Get mint data from MagicEden API
+            # 从 MagicEden API 获取铸币数据
             mint_data = await get_mint_data(self.session, nft_contract, self.account)
 
-            # Проверяем, не заминтил ли пользователь уже NFT
+            # 检查用户是否已经铸造了 NFT
             if mint_data == "already_minted":
                 logger.success(
                     f"[{self.account_index}] | ✅ NFT already minted from MagicEden (max mints per wallet reached)"
@@ -62,9 +62,9 @@ class MagicEden:
                 )
                 return False
 
-            # Проверяем наличие данных для транзакции в ответе API
+            # 检查 API 响应中的交易数据
             try:
-                # Проверяем, есть ли в ответе данные для прямой транзакции
+                # 检查响应是否包含直接交易的数据
                 if (
                     "steps" in mint_data
                     and len(mint_data["steps"]) > 1
@@ -74,12 +74,12 @@ class MagicEden:
                     if len(sale_step["items"]) > 0 and "data" in sale_step["items"][0]:
                         tx_data = sale_step["items"][0]["data"]
 
-                        # Используем данные транзакции из API
+                        # 使用来自 API 的交易数据
                         # logger.info(
                         #     f"[{self.account_index}] | 📝 Using transaction data from MagicEden API"
                         # )
 
-                        # Получаем необходимые параметры
+                        # 我们获得必要的参数
                         to_address = self.web3.to_checksum_address(tx_data["to"])
                         from_address = self.web3.to_checksum_address(tx_data["from"])
                         data = tx_data["data"]
@@ -89,20 +89,20 @@ class MagicEden:
                             else int(tx_data["value"])
                         )
 
-                        # Получаем gas_estimate из API, если доступно
+                        # 如果可用，从 API 获取 gas_estimate
                         gas_estimate = sale_step["items"][0].get("gasEstimate", 500000)
 
-                        # Создаем транзакцию с данными из API
+                        # 使用来自 API 的数据创建交易
                         base_fee = await self.web3.eth.gas_price
                         priority_fee = int(base_fee * 0.1)  # 10% priority fee
                         max_fee_per_gas = base_fee + priority_fee
 
-                        # Получаем nonce
+                        # 我们收到了随机数
                         nonce = await self.web3.eth.get_transaction_count(
                             self.account.address
                         )
 
-                        # Создаем транзакцию с обновленными параметрами
+                        # 使用更新的参数创建交易
                         tx = {
                             "from": from_address,
                             "to": to_address,
@@ -114,7 +114,7 @@ class MagicEden:
                             "chainId": 10143,
                         }
 
-                        # Пытаемся оценить газ
+                        # 我们正在尝试估算天然气
                         try:
                             gas_estimate = await self.web3.eth.estimate_gas(tx)
                             gas_with_buffer = int(gas_estimate * 1.2)  # 20% буфер
@@ -126,7 +126,7 @@ class MagicEden:
                         except Exception as e:
                             raise Exception(f"⚠️ Failed to estimate gas: {e}")
 
-                        # Проверяем баланс
+                        # 检查余额
                         balance = await self.web3.eth.get_balance(self.account.address)
                         if balance < value:
                             logger.error(
@@ -135,7 +135,7 @@ class MagicEden:
                             )
                             return False
 
-                        # Подписываем и отправляем транзакцию
+                        # 我们签署并发送交易
                         signed_tx = self.web3.eth.account.sign_transaction(
                             tx, self.private_key
                         )
@@ -147,7 +147,7 @@ class MagicEden:
                             f"[{self.account_index}] | 📤 MagicEden transaction sent: {EXPLORER_URL}{tx_hash.hex()}"
                         )
 
-                        # Ждем подтверждения транзакции
+                        # 等待交易确认
                         tx_receipt = await self.web3.eth.wait_for_transaction_receipt(
                             tx_hash
                         )
@@ -163,13 +163,13 @@ class MagicEden:
                             )
                             return False
 
-                # Если не нашли данные для прямой транзакции, используем стандартный подход
+                # 如果您没有找到直接交易的数据，请使用标准方法
                 logger.info(f"[{self.account_index}] | 🔄 Using standard mint approach")
 
-                # Extract necessary data from the mint response
+                # 从铸币厂响应中提取必要的数据
                 total_price = int(mint_data["path"][0]["totalPrice"])
                 if total_price <= 0:
-                    # Если цена равна 0, оставляем 0 для бесплатного минта
+                    # 如果价格为 0，则留下 0 即可获得免费薄荷糖
                     total_price = 0
                     logger.info(
                         f"[{self.account_index}] | 🎁 MagicEden free mint detected"
@@ -179,15 +179,15 @@ class MagicEden:
                     f"[{self.account_index}] | 💰 MagicEden mint price: {total_price}"
                 )
 
-                # Create contract instance
+                # 创建合约实例
                 contract = self.web3.eth.contract(address=nft_contract, abi=ABI)
 
-                # Get current gas price and calculate max fee
+                # 获取当前 gas 价格并计算最高费用
                 base_fee = await self.web3.eth.gas_price
                 priority_fee = int(base_fee * 0.1)  # 10% priority fee
                 max_fee_per_gas = base_fee + priority_fee
 
-                # Build transaction without gas estimate first
+                # 首先构建没有 gas 估算的交易
                 tx_params = {
                     "from": self.account.address,
                     "value": total_price,
@@ -196,10 +196,10 @@ class MagicEden:
                     ),
                     "maxFeePerGas": max_fee_per_gas,
                     "maxPriorityFeePerGas": priority_fee,
-                    "chainId": 10143,  # Явно указываем chainId для Monad
+                    "chainId": 10143,  # 我们明确指定 Monad 的 chainId
                 }
 
-                # Пытаемся оценить газ
+                # 我们正在尝试估算gas
                 try:
                     gas_estimate = await contract.functions.mint(
                         1, self.account.address
@@ -217,7 +217,7 @@ class MagicEden:
                     )
                     return False
 
-                # Build the final transaction
+                # 建立最终交易
                 tx = await contract.functions.mint(
                     1, self.account.address
                 ).build_transaction(tx_params)

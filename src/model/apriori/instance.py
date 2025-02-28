@@ -30,6 +30,7 @@ class Apriori:
         self.account: Account = Account.from_key(private_key=private_key)
         self.web3 = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(RPC_URL))
 
+    # 从网络获取当前气体参数。
     async def get_gas_params(self) -> Dict[str, int]:
         """Get current gas parameters from the network."""
         latest_block = await self.web3.eth.get_block("latest")
@@ -44,6 +45,7 @@ class Apriori:
             "maxPriorityFeePerGas": max_priority_fee,
         }
 
+    # 估算交易所需的 gas 并添加一些缓冲。
     async def estimate_gas(self, transaction: dict) -> int:
         """Estimate gas for transaction and add some buffer."""
         try:
@@ -59,6 +61,7 @@ class Apriori:
     async def stake_mon(self, amount: float = 0.0001):
         for retry in range(self.config.SETTINGS.ATTEMPTS):
             try:
+                # 生成随机金额，金额范围在配置文件中定义
                 random_amount = round(
                     random.uniform(
                         self.config.APRIORI.AMOUNT_TO_STAKE[0],
@@ -70,15 +73,15 @@ class Apriori:
                     f"[{self.account_index}] Staking {random_amount} MON on Apriori"
                 )
 
-                # Создаем синхронную версию контракта для кодирования данных
+                # 创建用于编码数据的同步版本的合约
                 contract = Web3().eth.contract(address=STAKE_ADDRESS, abi=STAKE_ABI)
                 amount_wei = Web3.to_wei(random_amount, "ether")
                 gas_params = await self.get_gas_params()
 
-                # Создаем базовую транзакцию для оценки газа
+                # 创建 gas 定价的基本交易
                 transaction = {
                     "from": self.account.address,
-                    "to": STAKE_ADDRESS,
+                    "to": STAKE_ADDRESS, # 质押地址（0xb2f82D0f38dc453D596Ad40A37799446Cc89274A），未验证该合约地址的有效性
                     "value": amount_wei,
                     "data": contract.functions.deposit(
                         amount_wei, self.account.address
@@ -87,11 +90,11 @@ class Apriori:
                     "type": 2,
                 }
 
-                # Оцениваем газ
+                # 我们评估天然气
                 estimated_gas = await self.estimate_gas(transaction)
                 logger.info(f"[{self.account_index}] Estimated gas: {estimated_gas}")
 
-                # Добавляем остальные параметры транзакции
+                # 添加剩余交易参数
                 transaction.update(
                     {
                         "nonce": await self.web3.eth.get_transaction_count(
@@ -110,7 +113,7 @@ class Apriori:
                     signed_txn.raw_transaction
                 )
 
-                # Ждем подтверждения транзакции
+                # 等待交易确认
                 logger.info(
                     f"[{self.account_index}] Waiting for transaction confirmation..."
                 )
@@ -132,6 +135,7 @@ class Apriori:
                 await asyncio.sleep(random_pause)
         return False
 
+    # 获取指定代币的余额。
     async def get_token_balance(self, token_symbol: str) -> Decimal:
         """Get balance of specified token."""
         if token_symbol == "native":

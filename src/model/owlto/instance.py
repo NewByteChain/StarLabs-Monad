@@ -29,6 +29,7 @@ class Owlto:
         self.account: Account = Account.from_key(private_key=private_key)
         self.web3 = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(RPC_URL))
 
+    # 从网络获取当前气体参数。
     async def get_gas_params(self) -> Dict[str, int]:
         """Get current gas parameters from the network."""
         latest_block = await self.web3.eth.get_block("latest")
@@ -43,6 +44,7 @@ class Owlto:
             "maxPriorityFeePerGas": max_priority_fee,
         }
 
+    # 估算交易所需的 gas 并添加一些缓冲。
     async def estimate_gas(self, transaction: dict) -> int:
         """Estimate gas for transaction and add some buffer."""
         try:
@@ -62,20 +64,20 @@ class Owlto:
 
                 gas_params = await self.get_gas_params()
 
-                # Создаем базовую транзакцию для оценки газа
+                # 创建 gas 定价的基本交易
                 transaction = {
                     "from": self.account.address,
-                    "data": DEPLOY_CONTRACT_BYTECODE,  # используем правильное имя константы
+                    "data": DEPLOY_CONTRACT_BYTECODE,  # 使用正确的常量名称
                     "chainId": 10143,
                     "type": 2,
-                    "value": 0,  # не отправляем MON при деплое
+                    "value": 0,  # 我们在部署期间不发送 MON
                 }
 
-                # Оцениваем газ
+                # 我们评估天然气
                 estimated_gas = await self.estimate_gas(transaction)
                 logger.info(f"[{self.account_index}] Estimated gas: {estimated_gas}")
 
-                # Добавляем остальные параметры транзакции
+                # 添加剩余交易参数
                 transaction.update(
                     {
                         "nonce": await self.web3.eth.get_transaction_count(
@@ -94,7 +96,7 @@ class Owlto:
                     signed_txn.raw_transaction
                 )
 
-                # Ждем подтверждения транзакции
+                # 等待交易确认
                 logger.info(
                     f"[{self.account_index}] Waiting for contract deployment confirmation..."
                 )
