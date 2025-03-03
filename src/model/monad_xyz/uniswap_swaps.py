@@ -63,11 +63,8 @@ class MonadSwap:
             except Exception as e:
                 if attempt == max_retries - 1:
                     logger.error(f"Error getting balance after {max_retries} attempts: {str(e)}")
-                    return Decimal(0)
                 else:
                     await asyncio.sleep(1)  # Fixed 1 second pause between retries
-        
-        return Decimal(0)
     
     async def get_tokens_with_balance(self) -> List[Tuple[str, Decimal]]:
         tokens_with_balance = []

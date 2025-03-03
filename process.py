@@ -24,8 +24,38 @@ async def start():
                 lock,
             )
 
+<<<<<<< HEAD
     show_logo() # 显示 logo
     show_dev_info() # 显示开发者信息
+=======
+    show_logo()
+    show_dev_info()
+
+    print("\nAvailable options:\n")
+    print("[1] 😈 Start farm")
+    print("[2] 🔧 Edit config")
+    print("[3] 👋 Exit")
+    print()
+
+    try:
+        choice = input("Enter option (1-3): ").strip()
+    except Exception as e:
+        logger.error(f"Input error: {e}")
+        return
+
+    if choice == "3" or not choice:
+        return
+    elif choice == "2":
+        config_ui = src.utils.ConfigUI()
+        config_ui.run()
+        return
+    elif choice == "1":
+        pass
+    else:
+        logger.error(f"Invalid choice: {choice}")
+        return
+
+>>>>>>> dc9243634f530fa1057fbb3d5c377f27e959d0cc
     config = src.utils.get_config()
 
     # 读取代理配置文件
@@ -33,7 +63,7 @@ async def start():
     if len(proxies) == 0:
         logger.error("No proxies found in data/proxies.txt")  # 没有设置代理信息
         return
-    
+
     if "disperse_farm_accounts" in config.FLOW.TASKS:
         main_keys = src.utils.read_txt_file("private keys", "data/private_keys.txt")
         farm_keys = src.utils.read_txt_file("private keys", "data/keys_for_faucet.txt")
@@ -43,13 +73,16 @@ async def start():
     elif "disperse_from_one_wallet" in config.FLOW.TASKS:
         main_keys = src.utils.read_txt_file("private keys", "data/private_keys.txt")
         farm_keys = src.utils.read_txt_file("private keys", "data/keys_for_faucet.txt")
-        disperse_one_wallet = DisperseFromOneWallet(farm_keys[0], main_keys, proxies, config)
+        disperse_one_wallet = DisperseFromOneWallet(
+            farm_keys[0], main_keys, proxies, config
+        )
         await disperse_one_wallet.disperse()
         return
 
-
     if "farm_faucet" in config.FLOW.TASKS:
-        private_keys = src.utils.read_txt_file("private keys", "data/keys_for_faucet.txt")
+        private_keys = src.utils.read_txt_file(
+            "private keys", "data/keys_for_faucet.txt"
+        )
     else:
         private_keys = src.utils.read_txt_file("private keys", "data/private_keys.txt")
 
@@ -79,9 +112,14 @@ async def start():
         # Python 切片不包含最后一个元素，因此 +1
         accounts_to_process = private_keys[start_index - 1 : end_index]
 
+<<<<<<< HEAD
     
     discord_tokens = [""] * len(accounts_to_process) # 为每个帐户准备 Discord 令牌
     emails = [""] * len(accounts_to_process) # 为每个帐户准备电子邮件
+=======
+    discord_tokens = [""] * len(accounts_to_process)
+    emails = [""] * len(accounts_to_process)
+>>>>>>> dc9243634f530fa1057fbb3d5c377f27e959d0cc
 
     threads = config.SETTINGS.THREADS  # 线程数
 
@@ -122,7 +160,7 @@ async def start():
     await asyncio.gather(*tasks)
 
     logger.success("Saved accounts and private keys to a file.")
-    
+
     print_wallets_stats(config)
 
 # 单账户工作流程

@@ -1,6 +1,5 @@
+ - xApp (https://testnet.xapp.folks.finance/account/create)
+- Kinza (https://monad-test.kinza.finance/#/dashboard)
 
---- Monad Curvance
 
 
---- ThirdWeb
-- Faucet

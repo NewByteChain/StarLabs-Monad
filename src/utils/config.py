@@ -17,11 +17,17 @@ class SettingsConfig:
     RANDOM_PAUSE_BETWEEN_ACTIONS: Tuple[int, int]
     BROWSER_PAUSE_MULTIPLIER: float
     RANDOM_INITIALIZATION_PAUSE: Tuple[int, int]
+    TELEGRAM_USERS_IDS: List[int]
+    TELEGRAM_BOT_TOKEN: str
+
+@dataclass
+class FaucetConfig:
+    CAPSOLVER_API_KEY: str
 
 
 @dataclass
 class FlowConfig:
-    TASKS: List[str]
+    TASKS: List
     NUMBER_OF_SWAPS: Tuple[int, int]
     PERCENT_OF_BALANCE_TO_SWAP: Tuple[int, int]
 
@@ -48,13 +54,6 @@ class BimaConfig:
 
 
 @dataclass
-class FaucetConfig:
-    MONAD_XYZ: bool
-    CAPSOLVER_API_KEY: str
-    PROXY_FOR_CAPTCHA: str
-
-
-@dataclass
 class WalletInfo:
     account_index: int
     private_key: str
@@ -70,6 +69,24 @@ class WalletsConfig:
 
 @dataclass
 class GaszipConfig:
+    NETWORKS_TO_REFUEL_FROM: List[str]
+    AMOUNT_TO_REFUEL: Tuple[float, float]
+    MINIMUM_BALANCE_TO_REFUEL: float
+    WAIT_FOR_FUNDS_TO_ARRIVE: bool
+    MAX_WAIT_TIME: int
+
+
+@dataclass
+class MemebridgeConfig:
+    NETWORKS_TO_REFUEL_FROM: List[str]
+    AMOUNT_TO_REFUEL: Tuple[float, float]
+    MINIMUM_BALANCE_TO_REFUEL: float
+    WAIT_FOR_FUNDS_TO_ARRIVE: bool
+    MAX_WAIT_TIME: int
+
+
+@dataclass
+class TestnetBridgeConfig:
     NETWORKS_TO_REFUEL_FROM: List[str]
     AMOUNT_TO_REFUEL: Tuple[float, float]
     MINIMUM_BALANCE_TO_REFUEL: float
@@ -106,6 +123,7 @@ class DisperseConfig:
 class LilchogstarsConfig:
     MAX_AMOUNT_FOR_EACH_ACCOUNT: Tuple[int, int]
 
+
 @dataclass
 class DemaskConfig:
     MAX_AMOUNT_FOR_EACH_ACCOUNT: Tuple[int, int]
@@ -115,6 +133,7 @@ class DemaskConfig:
 class MonadkingConfig:
     MAX_AMOUNT_FOR_EACH_ACCOUNT: Tuple[int, int]
 
+
 @dataclass
 class MagicEdenConfig:
     NFT_CONTRACTS: List[str]
@@ -123,12 +142,12 @@ class MagicEdenConfig:
 @dataclass
 class Config:
     SETTINGS: SettingsConfig
+    FAUCET: FaucetConfig
     FLOW: FlowConfig
     APRIORI: AprioriConfig
     MAGMA: MagmaConfig
     KINTSU: KintsuConfig
     BIMA: BimaConfig
-    FAUCET: FaucetConfig
     GASZIP: GaszipConfig
     SHMONAD: ShmonadConfig
     ACCOUNTABLE: AccountableConfig
@@ -138,6 +157,8 @@ class Config:
     DEMASK: DemaskConfig
     MONADKING: MonadkingConfig
     MAGICEDEN: MagicEdenConfig
+    MEMEBRIDGE: MemebridgeConfig
+    TESTNET_BRIDGE: TestnetBridgeConfig
     WALLETS: WalletsConfig = field(default_factory=WalletsConfig)
     lock: asyncio.Lock = field(default_factory=asyncio.Lock)
 
@@ -146,6 +167,39 @@ class Config:
         """Load configuration from yaml file"""
         with open(path, "r", encoding="utf-8") as file:
             data = yaml.safe_load(file)
+
+        # Load tasks from tasks.py
+        try:
+            # Try to import tasks from tasks.py using a regular import
+            import tasks
+
+            if hasattr(tasks, "TASKS"):
+                # TASKS now contains preset names
+                preset_names = [preset_name.upper() for preset_name in tasks.TASKS]
+
+                # Combine tasks from all specified presets
+                combined_tasks = []
+                for preset_name in preset_names:
+                    if hasattr(tasks, preset_name):
+                        preset_tasks = getattr(tasks, preset_name)
+                        combined_tasks.extend(preset_tasks)
+                    else:
+                        print(f"Warning: Preset {preset_name} not found in tasks.py")
+
+                if combined_tasks:
+                    tasks_list = combined_tasks
+                else:
+                    error_msg = "No valid presets found in tasks.py"
+                    print(f"Error: {error_msg}")
+                    raise ValueError(error_msg)
+            else:
+                error_msg = "No TASKS list found in tasks.py"
+                print(f"Error: {error_msg}")
+                raise ValueError(error_msg)
+        except ImportError as e:
+            error_msg = f"Could not import tasks.py: {e}"
+            print(f"Error: {error_msg}")
+            raise ImportError(error_msg) from e
 
         return cls(
             SETTINGS=SettingsConfig(
@@ -167,9 +221,14 @@ class Config:
                     data["SETTINGS"]["RANDOM_INITIALIZATION_PAUSE"]
                 ),
                 BROWSER_PAUSE_MULTIPLIER=data["SETTINGS"]["BROWSER_PAUSE_MULTIPLIER"],
+                TELEGRAM_USERS_IDS=data["SETTINGS"]["TELEGRAM_USERS_IDS"],
+                TELEGRAM_BOT_TOKEN=data["SETTINGS"]["TELEGRAM_BOT_TOKEN"],
+            ),
+            FAUCET=FaucetConfig(
+                CAPSOLVER_API_KEY=data["FAUCET"]["CAPSOLVER_API_KEY"],
             ),
             FLOW=FlowConfig(
-                TASKS=data["FLOW"]["TASKS"],
+                TASKS=tasks_list,
                 NUMBER_OF_SWAPS=tuple(data["FLOW"]["NUMBER_OF_SWAPS"]),
                 PERCENT_OF_BALANCE_TO_SWAP=tuple(
                     data["FLOW"]["PERCENT_OF_BALANCE_TO_SWAP"]
@@ -190,17 +249,34 @@ class Config:
                     data["BIMA"]["PERCENT_OF_BALANCE_TO_LEND"]
                 ),
             ),
-            FAUCET=FaucetConfig(
-                MONAD_XYZ=data["FAUCET"]["MONAD_XYZ"],
-                CAPSOLVER_API_KEY=data["FAUCET"]["CAPSOLVER_API_KEY"],
-                PROXY_FOR_CAPTCHA=data["FAUCET"]["PROXY_FOR_CAPTCHA"],
-            ),
             GASZIP=GaszipConfig(
                 NETWORKS_TO_REFUEL_FROM=data["GASZIP"]["NETWORKS_TO_REFUEL_FROM"],
                 AMOUNT_TO_REFUEL=tuple(data["GASZIP"]["AMOUNT_TO_REFUEL"]),
                 MINIMUM_BALANCE_TO_REFUEL=data["GASZIP"]["MINIMUM_BALANCE_TO_REFUEL"],
                 WAIT_FOR_FUNDS_TO_ARRIVE=data["GASZIP"]["WAIT_FOR_FUNDS_TO_ARRIVE"],
                 MAX_WAIT_TIME=data["GASZIP"]["MAX_WAIT_TIME"],
+            ),
+            MEMEBRIDGE=MemebridgeConfig(
+                NETWORKS_TO_REFUEL_FROM=data["MEMEBRIDGE"]["NETWORKS_TO_REFUEL_FROM"],
+                AMOUNT_TO_REFUEL=tuple(data["MEMEBRIDGE"]["AMOUNT_TO_REFUEL"]),
+                MINIMUM_BALANCE_TO_REFUEL=data["MEMEBRIDGE"][
+                    "MINIMUM_BALANCE_TO_REFUEL"
+                ],
+                WAIT_FOR_FUNDS_TO_ARRIVE=data["MEMEBRIDGE"]["WAIT_FOR_FUNDS_TO_ARRIVE"],
+                MAX_WAIT_TIME=data["MEMEBRIDGE"]["MAX_WAIT_TIME"],
+            ),
+            TESTNET_BRIDGE=TestnetBridgeConfig(
+                NETWORKS_TO_REFUEL_FROM=data["TESTNET_BRIDGE"][
+                    "NETWORKS_TO_REFUEL_FROM"
+                ],
+                AMOUNT_TO_REFUEL=tuple(data["TESTNET_BRIDGE"]["AMOUNT_TO_REFUEL"]),
+                MINIMUM_BALANCE_TO_REFUEL=data["TESTNET_BRIDGE"][
+                    "MINIMUM_BALANCE_TO_REFUEL"
+                ],
+                WAIT_FOR_FUNDS_TO_ARRIVE=data["TESTNET_BRIDGE"][
+                    "WAIT_FOR_FUNDS_TO_ARRIVE"
+                ],
+                MAX_WAIT_TIME=data["TESTNET_BRIDGE"]["MAX_WAIT_TIME"],
             ),
             SHMONAD=ShmonadConfig(
                 PERCENT_OF_BALANCE_TO_SWAP=tuple(
