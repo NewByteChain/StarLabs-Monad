@@ -24,12 +24,9 @@ async def start():
                 lock,
             )
 
-<<<<<<< HEAD
+
     show_logo() # 显示 logo
     show_dev_info() # 显示开发者信息
-=======
-    show_logo()
-    show_dev_info()
 
     print("\nAvailable options:\n")
     print("[1] 😈 Start farm")
@@ -55,7 +52,7 @@ async def start():
         logger.error(f"Invalid choice: {choice}")
         return
 
->>>>>>> dc9243634f530fa1057fbb3d5c377f27e959d0cc
+
     config = src.utils.get_config()
 
     # 读取代理配置文件
@@ -112,14 +109,9 @@ async def start():
         # Python 切片不包含最后一个元素，因此 +1
         accounts_to_process = private_keys[start_index - 1 : end_index]
 
-<<<<<<< HEAD
     
     discord_tokens = [""] * len(accounts_to_process) # 为每个帐户准备 Discord 令牌
     emails = [""] * len(accounts_to_process) # 为每个帐户准备电子邮件
-=======
-    discord_tokens = [""] * len(accounts_to_process)
-    emails = [""] * len(accounts_to_process)
->>>>>>> dc9243634f530fa1057fbb3d5c377f27e959d0cc
 
     threads = config.SETTINGS.THREADS  # 线程数
 
