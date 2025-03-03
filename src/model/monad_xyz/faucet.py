@@ -193,50 +193,6 @@ async def faucet(
     profile_dir = None
     for retry in range(config.SETTINGS.ATTEMPTS):
         try:
-<<<<<<< HEAD
-            # 初始化验证码解决器
-            solver = Capsolver(
-                config.FAUCET.CAPSOLVER_API_KEY,
-                config.FAUCET.PROXY_FOR_CAPTCHA,
-                session,
-            )
-            for _ in range(3):
-                # 解决 Cloudflare Turnstile 验证码并返回令牌
-                result = await solver.solve_turnstile(
-                    "0x4AAAAAAA-3X4Nd7hf3mNGx",
-                    "https://testnet.monad.xyz/",
-                    True,
-                )
-                if result:
-                    logger.success(f"{wallet.address} | 已解决水龙头的验证码问题") 
-                    break
-                else:
-                    logger.error(
-                        f"{wallet.address} | 无法解决水龙头的验证码"
-                    )
-
-            if not result:
-                raise Exception("水龙头验证码解决失败 3 次")
-
-            headers = {
-                "accept": "*/*",
-                "accept-language": "fr-CH,fr;q=0.9,en-US;q=0.8,en;q=0.7",
-                "content-type": "application/json",
-                "origin": "https://testnet.monad.xyz",
-                "priority": "u=1, i",
-                "referer": "https://testnet.monad.xyz/",
-                "sec-ch-ua": '"Not A(Brand";v="8", "Chromium";v="131", "Google Chrome";v="131"',
-                "sec-ch-ua-mobile": "?0",
-                "sec-ch-ua-platform": '"Windows"',
-                "sec-fetch-dest": "empty",
-                "sec-fetch-mode": "cors",
-                "sec-fetch-site": "same-origin",
-                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-            }
-
-            # 生成访客 ID
-            visitor_id = secrets.token_hex(16)
-=======
             my_web3 = AsyncWeb3(AsyncWeb3.AsyncHTTPProvider(RPC_URL))
             capsolver_path = os.path.join(os.path.dirname(__file__), "capsolver")
 
@@ -257,53 +213,14 @@ async def faucet(
             user_agent, chrome_version = get_random_user_agent()
             viewport = get_random_viewport()
             launch_args = get_random_launch_args(capsolver_path)
->>>>>>> dc9243634f530fa1057fbb3d5c377f27e959d0cc
 
             async with async_playwright() as p:
-                # Create a unique profile directory in data/profiles
+                # 在 data/profiles 中创建一个唯一的配置文件目录
                 profile_dir = os.path.join(
                     get_profiles_dir(), f"chrome_profile_{str(uuid.uuid4())}"
                 )
 
-<<<<<<< HEAD
-                if "Claimed already" in response.text:
-                    logger.success(
-                        f"[{account_index}] | 已经从 faucet 领取代币"
-                    )
-                    return True
-
-                if response.status_code == 200:
-                    logger.success(
-                        f"[{account_index}] | 成功从 faucet 获取代币"
-                    )
-                    return True
-                else:
-                    if "FUNCTION_INVOCATION_TIMEOUT" in response.text:
-                        logger.error(
-                            f"[{account_index}] | 无法从水龙头获取令牌：服务器没有响应，请等待......"
-                        )
-                    elif "Server error on QuickNode API" in response.text:
-                        logger.error(
-                            f"[{account_index}] | 水龙头不工作，QUICKNODE 已关闭"
-                        )
-                    elif "Over Enterprise free quota" in response.text:
-                        logger.error(
-                            f"[{account_index}] | MONAD 太烂了，FAUCET 不工作，稍后再试"
-                        )
-                        return False
-                    elif "invalid-keys" in response.text:
-                        logger.error(
-                            f"[{account_index}] | 请使用 GITHUB 更新机器人"
-                        )
-                        return False
-                    else:
-                        logger.error(
-                            f"[{account_index}] | 无法从水龙头获取代币"
-                        )
-                    await asyncio.sleep(3)
-                    break
-=======
-                # Launch browser with enhanced settings
+                # 使用增强设置启动浏览器
                 browser = await p.chromium.launch_persistent_context(
                     user_data_dir=profile_dir,
                     channel="chrome",
@@ -320,7 +237,7 @@ async def faucet(
                     timeout=int(30000 * config.SETTINGS.BROWSER_PAUSE_MULTIPLIER),
                 )
 
-                # Create new page and navigate
+                # 创建新页面并导航
                 page = await browser.new_page()
 
                 # Set custom headers
@@ -356,7 +273,7 @@ async def faucet(
                 await asyncio.sleep(5 * config.SETTINGS.BROWSER_PAUSE_MULTIPLIER)
 
                 solved = False
-                # # 3. Wait for captcha solving
+                # # 3. 等待验证码解决
                 logger.success(
                     f"[{account_index}] [{wallet.address}] | Wait 30 sec for captcha solving..."
                 )
@@ -476,7 +393,6 @@ async def faucet(
                     profile_dir
                 )  # Clean up profile after successful completion
                 return True
->>>>>>> dc9243634f530fa1057fbb3d5c377f27e959d0cc
 
         except Exception as e:
             try:

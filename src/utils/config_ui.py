@@ -121,7 +121,7 @@ class ConfigUI:
 
     def load_config(self):
         config_path = os.path.join(os.path.dirname(__file__), "..", "..", "config.yaml")
-        with open(config_path, "r") as file:
+        with open(config_path, "r", encoding='utf-8') as file:
             self.config = yaml.safe_load(file)
 
     def create_range_inputs(self, parent, label, config_value, width=120):
@@ -872,7 +872,7 @@ class ConfigUI:
 
         # Save to file
         config_path = os.path.join(os.path.dirname(__file__), "..", "..", "config.yaml")
-        with open(config_path, "w") as file:
+        with open(config_path, "w", encoding='utf-8') as file:
             yaml.dump(self.config, file, default_flow_style=False)
 
     def run(self):

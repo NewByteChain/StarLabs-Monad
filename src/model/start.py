@@ -76,21 +76,21 @@ class Start:
             # 我们提前定义所有任务
             planned_tasks = []
             task_plan_msg = []
-            task_index = 1  # Initialize a single counter for all tasks
+            task_index = 1  # 为所有任务初始化一个计数器
 
             for task_item in self.config.FLOW.TASKS:
                 if isinstance(task_item, list):
-                    # For tasks in square brackets [], randomly select one
+                    # 对于方括号 [] 中的任务，随机选择一个
                     selected_task = random.choice(task_item)
                     planned_tasks.append((task_index, selected_task, "random_choice"))
                     task_plan_msg.append(f"{task_index}. {selected_task}")
                     task_index += 1
                 elif isinstance(task_item, tuple):
-                    # For tasks in parentheses (), shuffle and execute all
+                    # 对于括号 () 中的任务，随机排序并执行所有
                     shuffled_tasks = list(task_item)
                     random.shuffle(shuffled_tasks)
 
-                    # Add each shuffled task individually to the plan
+                    # 将每个打乱顺序的任务单独添加到计划中
                     for subtask in shuffled_tasks:
                         planned_tasks.append((task_index, subtask, "shuffled_item"))
                         task_plan_msg.append(f"{task_index}. {subtask}")
@@ -105,7 +105,7 @@ class Start:
                 f"[{self.account_index}] Task execution plan: {' | '.join(task_plan_msg)}"
             )
 
-            # Выполняем задачи по плану
+            # 我们按计划执行任务
             for i, task, task_type in planned_tasks:
                 logger.info(f"[{self.account_index}] Executing task {i}: {task}")
                 await self.execute_task(task, monad)
@@ -142,13 +142,14 @@ class Start:
             await monad.swaps(type="collect_all_to_monad")
 
         elif task == "gaszip":
-            gaszip = Gaszip(
-                self.account_index,
-                self.proxy,
-                self.private_key,
-                self.config,
-            )
-            await gaszip.refuel()  # 加油交易（发送：Arbitrum、Optimism、Base给这个地址0x391E7C679d29bD940d63be94AD22A25d25b5A604）
+            logger.warning("Gaszip is disabled~")  # 禁用加油操作
+            # gaszip = Gaszip(
+            #     self.account_index,
+            #     self.proxy,
+            #     self.private_key,
+            #     self.config,
+            # )
+            # await gaszip.refuel()  # 加油交易（发送：Arbitrum、Optimism、Base给这个地址0x391E7C679d29bD940d63be94AD22A25d25b5A604）
 
         elif task == "memebridge":
             memebridge = Memebridge(

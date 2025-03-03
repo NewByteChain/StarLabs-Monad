@@ -44,16 +44,16 @@ async def read_database() -> Dict:
     try:
         async with _db_lock:
             try:
-                with open("src/model/aircraft/database.json", "r") as f:
+                with open("src/model/aircraft/database.json", "r", encoding='utf-8') as f:
                     return json.load(f)
             except FileNotFoundError:
                 # Create new database file if it doesn't exist
-                with open("src/model/aircraft/database.json", "w") as f:
+                with open("src/model/aircraft/database.json", "w", encoding='utf-8') as f:
                     json.dump({}, f)
                 return {}
             except json.JSONDecodeError:
                 # Reset database if JSON is invalid
-                with open("src/model/aircraft/database.json", "w") as f:
+                with open("src/model/aircraft/database.json", "w", encoding='utf-8') as f:
                     json.dump({}, f)
                 return {}
     except Exception as e:
@@ -64,7 +64,7 @@ async def write_database(data: Dict) -> None:
     """Thread-safe function to write to the database file."""
     async with _db_lock:
         try:
-            with open("src/model/aircraft/database.json", "w") as f:
+            with open("src/model/aircraft/database.json", "w", encoding='utf-8') as f:
                 json.dump(data, f, indent=4)
         except Exception as e:
             logger.error(f"Error writing to database: {e}")

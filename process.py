@@ -11,6 +11,7 @@ from src.utils.output import show_dev_info, show_logo
 import src.model
 from src.utils.statistics import print_wallets_stats
 
+
 async def start():
     async def launch_wrapper(index, proxy, private_key, discord_token, email):
         async with semaphore:
@@ -24,9 +25,8 @@ async def start():
                 lock,
             )
 
-
-    show_logo() # 显示 logo
-    show_dev_info() # 显示开发者信息
+    show_logo()
+    show_dev_info()
 
     print("\nAvailable options:\n")
     print("[1] 😈 Start farm")
@@ -52,13 +52,12 @@ async def start():
         logger.error(f"Invalid choice: {choice}")
         return
 
-
     config = src.utils.get_config()
 
-    # 读取代理配置文件
+    # 读取所有文件
     proxies = src.utils.read_txt_file("proxies", "data/proxies.txt")
     if len(proxies) == 0:
-        logger.error("No proxies found in data/proxies.txt")  # 没有设置代理信息
+        logger.error("No proxies found in data/proxies.txt")
         return
 
     if "disperse_farm_accounts" in config.FLOW.TASKS:
@@ -109,11 +108,10 @@ async def start():
         # Python 切片不包含最后一个元素，因此 +1
         accounts_to_process = private_keys[start_index - 1 : end_index]
 
-    
-    discord_tokens = [""] * len(accounts_to_process) # 为每个帐户准备 Discord 令牌
-    emails = [""] * len(accounts_to_process) # 为每个帐户准备电子邮件
+    discord_tokens = [""] * len(accounts_to_process)
+    emails = [""] * len(accounts_to_process)
 
-    threads = config.SETTINGS.THREADS  # 线程数
+    threads = config.SETTINGS.THREADS
 
     # 我们为选定的账户准备代理
     cycled_proxies = [
@@ -155,7 +153,7 @@ async def start():
 
     print_wallets_stats(config)
 
-# 单账户工作流程
+
 async def account_flow(
     account_index: int,
     proxy: str,
@@ -174,15 +172,15 @@ async def account_flow(
         await asyncio.sleep(pause)
 
         report = False
-        #  选择要运行的模型
+
         instance = src.model.Start(
             account_index, proxy, private_key, discord_token, email, config
         )
-        # 初始化账户客户端
+
         result = await wrapper(instance.initialize, config)
         if not result:
             report = True
-        # 执行工作流程
+
         result = await wrapper(instance.flow, config)
         if not result:
             report = True
@@ -207,14 +205,14 @@ async def wrapper(function, config: src.utils.config.Config, *args, **kwargs):
     attempts = config.SETTINGS.ATTEMPTS
     for attempt in range(attempts):
         result = await function(*args, **kwargs)
-        if isinstance(result, tuple) and result and isinstance(result[0], bool): # 如果返回的是元组，且第一个元素是布尔值
+        if isinstance(result, tuple) and result and isinstance(result[0], bool):
             if result[0]:
                 return result
-        elif isinstance(result, bool): # 如果返回的是布尔值
+        elif isinstance(result, bool):
             if result:
                 return True
 
-        if attempt < attempts - 1:  # 最后一次尝试后不要休眠
+        if attempt < attempts - 1:  # Don't sleep after the last attempt
             pause = random.randint(
                 config.SETTINGS.PAUSE_BETWEEN_ATTEMPTS[0],
                 config.SETTINGS.PAUSE_BETWEEN_ATTEMPTS[1],
@@ -228,7 +226,7 @@ async def wrapper(function, config: src.utils.config.Config, *args, **kwargs):
 
 
 def task_exists_in_config(task_name: str, tasks_list: list) -> bool:
-    """递归检查任务列表中是否存在任务，包括嵌套列表"""
+    """Рекурсивно проверяет наличие задачи в списке задач, включая вложенные списки"""
     for task in tasks_list:
         if isinstance(task, list):
             if task_exists_in_config(task_name, task):
