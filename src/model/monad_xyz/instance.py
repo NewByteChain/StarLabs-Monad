@@ -33,7 +33,8 @@ class MonadXYZ:
 
     async def swaps(self, type: str):
         try:
-            if type == "swaps":
+            if type == "swaps": 
+                return
                 number_of_swaps = random.randint(
                     self.config.FLOW.NUMBER_OF_SWAPS[0], self.config.FLOW.NUMBER_OF_SWAPS[1]
                 )
@@ -295,7 +296,7 @@ class MonadXYZ:
     async def faucet(self):
         try:
             return await faucet(
-                self.session, self.account_index, self.config, self.wallet
+                self.session, self.account_index, self.config, self.wallet, self.proxy
             )
         except Exception as e:
             logger.error(f"[{self.account_index}] | Error faucet to monad.xyz: {e}")

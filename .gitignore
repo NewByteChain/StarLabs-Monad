@@ -5,8 +5,11 @@
 __pycache__
 test.py
 app.log
+/data/profiles
 /data/success_data
 /data/proxies.txt
 /data/private_keys.txt
 /data/keys_for_faucet.txt
 config.yaml
+
+

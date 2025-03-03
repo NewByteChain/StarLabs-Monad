@@ -139,8 +139,8 @@ class NadDomains:
                 logger.error(f"[{self.account_index}] Could not get signature for {name}")
                 return False
             
-            # Use fixed fee of 0.02 MON
-            fee = self.web3.to_wei(0.02, 'ether')
+            # Use fixed fee of 0.1 MON
+            fee = self.web3.to_wei(0.1, 'ether')
             
             register_data = [
                 name,                                 # name

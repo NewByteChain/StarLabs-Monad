@@ -4,39 +4,64 @@ This tool automates interactions with the Monad testnet, including various DeFi 
 
 TUTORIAL - https://star-labs.gitbook.io/star-labs/monad-ru
 
-## Features
-# All features are available in config.yaml
-- 💎 MagicEden
-- 💱 Perform token swaps
-- 🏦 Stake MON on Apriori, Magma, Kintsu, Shmonad, Bima
-- 📄 Mint NFT: accountable, lilchogstars, demask, monadking, monadking_unlocked
-- 🦉 Deploy contract on Owlto
-- 🌋 Gaszip
-- 🌐 Orbiter
-- 📄 Logs
-- 📄 Nad domains
-- And much more...
+# All features are available in config:
+# FAUCETS
+"faucet" - get tokens from faucet
 
-## Features Description
+"farm_faucet" - get tokens from faucet ON FARM ACCOUNTS (data/keys_for_faucet.txt)
 
-### Faucet
-Using official Monad testnet faucet.
+"disperse_farm_accounts" - disperse tokens from farm accounts to main accounts | keys_for_faucet.txt -> private_keys.txt
 
-### Swaps
-Performs random swaps between available tokens with configurable amounts.
+"disperse_from_one_wallet" - disperse tokens from one wallet to all other wallets | keys_for_faucet.txt (first wallet) -> private_keys.txt
 
-### Apriori Staking
-Stakes MON tokens on Apriori platform with configurable amounts.
+# SWAPS
+"collect_all_to_monad" - swap all tokens to native token (MON)
 
-### Magma Staking
-Stakes MON tokens on Magma platform with configurable amounts.
+"swaps" - testnet.monad.xyz/ page token swaps
 
-### Owlto Contract Deployment
-Deploys smart contracts on Owlto platform.
+"bean" - swap tokens on Bean DEX
 
-### Bima Operations
-- Claims tokens from Bima faucet
-- Performs lending operations with configurable percentage of balance
+"ambient" - swap tokens on Ambient DEX
+
+"izumi" - swap tokens on Izumi DEX
+
+# STAKES
+"apriori" - stake MON token
+
+"magma" - stake MON token on Magma
+
+"shmonad" - buy and stake shmon on shmonad.xyz | LOOK SETTINGS BELOW
+
+"kintsu" - stake MON token on kintsu.xyz/
+
+# MINT
+"magiceden" - mint NFT on magiceden.io
+
+"accountable" - mint accountable nft
+
+"owlto" - deploy contract on Owlto
+
+"lilchogstars" - mint NFT on testnet.lilchogstars.com/
+
+"demask" - mint NFT on app.demask.finance/launchpad/0x2cdd146aa75ffa605ff7c5cc5f62d3b52c140f9c/0
+
+"monadking" - mint NFT on nerzo.xyz/monadking
+
+"monadking_unlocked" - mint NFT on www.nerzo.xyz/unlocked
+
+# REFUEL
+"gaszip" - gaszip refuel from arbitrum, optimism, base to monad
+
+"orbiter" - bridge ETH from Sepolia to Monad via Orbiter
+
+"memebridge" - memebridge refuel from arbitrum, optimism, base to monad
+
+# OTHER
+"logs" - show logs: MON balance | number of transactions | avarage balance | avarage number of transactions
+
+"nad_domains" - register random domain on nad.domains
+
+"aircraft" - mint NFT on aircraft.fun
 
 ## Requirements
 - Python 3.11 or higher
@@ -54,33 +79,8 @@ cd StarLabs-Monad
 pip install -r requirements.txt
 ```
 
-3. Configure the bot in `config.yaml`
-
-```yaml
-SETTINGS:
-# number of concurrent threads
-THREADS: 1
-# number of retries for ANY action
-ATTEMPTS: 5
-# pause between attempts
-PAUSE_BETWEEN_ATTEMPTS: [5, 15]
-# pause in seconds between accounts
-RANDOM_PAUSE_BETWEEN_ACCOUNTS: [3, 10]
-# pause in seconds between actions
-RANDOM_PAUSE_BETWEEN_ACTIONS: [2, 5]
-FLOW:
-# Available tasks:
-# "connect_discord" - connect discord account
-# "swaps" - swaps tokens
-# "apriori" - stake MON token
-# "magma" - stake MON token on Magma
-# "owlto" - deploy contract on Owlto
-# "bima" - lending and faucet
-TASKS: ["connect_discord", "swaps", "apriori", "magma", "owlto", "bima"]
-# number of swaps
-NUMBER_OF_SWAPS: [1, 3]
-# percent of balance to swap
-PERCENT_OF_BALANCE_TO_SWAP: [10, 15]
+3. Configure the bot by starting it (py main.py) and choosing the edit config option`
+![image](https://github.com/user-attachments/assets/0d887865-049b-4804-9e11-ffc80ae21ce3)
 
 ```
 
